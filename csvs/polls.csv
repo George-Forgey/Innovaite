@@ -1,3 +1,3 @@
-poll_id,question,replies
-1,starbucks or dunkin?,"[""starbucks"", ""starbuckss""]"
-2,starbucks or dunkin?,[]
+poll_id,question,replies,usernames
+1,starbucks or dunkin?,"[""stats"", ""cats""]","[""daniel"", ""daniel2""]"
+2,starbucks or dunkin?,[],

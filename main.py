@@ -85,8 +85,8 @@ def save_poll(question):
         new_id = 1
     else:
         new_id = int(df["poll_id"].max()) + 1
-    new_poll = pd.DataFrame([[new_id, question, json.dumps([])]],
-                            columns=["poll_id", "question", "replies"])
+    new_poll = pd.DataFrame([[new_id, question, json.dumps([]), json.dumps([])]], 
+                            columns=["poll_id", "question", "replies", "usernames"])
     df = pd.concat([df, new_poll], ignore_index=True)
     df.to_csv(POLLS_CSV, index=False)
     return new_id
@@ -100,11 +100,16 @@ def add_poll_reply(poll_id, reply):
     index = poll_row.index[0]
     replies_str = df.at[index, "replies"]
     try:
-        replies = json.loads(replies_str) if replies_str else []
+        replies = json.loads(df.at[index, "replies"]) if df.at[index, "replies"] else []
+        usernames = json.loads(df.at[index, "usernames"]) if df.at[index, "usernames"] else []
     except:
-        replies = []
+        replies, usernames = [], []
+    if st.session_state.username in usernames:
+        return "You have already submitted a reply for this poll."
     replies.append(reply)
+    usernames.append(st.session_state.username)
     df.at[index, "replies"] = json.dumps(replies)
+    df.at[index, "usernames"] = json.dumps(usernames)
     df.to_csv(POLLS_CSV, index=False)
     return True
 
