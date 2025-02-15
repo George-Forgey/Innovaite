@@ -6,7 +6,7 @@ import json
 # -------------------------
 # Helper Functions for Auth
 # -------------------------
-USERS_CSV = "csvs\users.csv"
+USERS_CSV = "./csvs/users.csv"
 
 def load_users():
     """Load users from CSV; if not exists, create an empty DataFrame."""
@@ -67,7 +67,7 @@ def signup_page():
 # -------------------------
 # Polls Storage Helpers
 # -------------------------
-POLLS_CSV = "csvs\polls.csv"
+POLLS_CSV = "./csvs/polls.csv"
 
 def load_polls():
     """Load polls from CSV; if not exists, create an empty DataFrame."""
