@@ -3,4 +3,9 @@ qwe,123
 abc,aad
 abcd,def
 example admin,123
+<<<<<<< HEAD
 abc_123,123
+=======
+daniel,cat
+daniel2,cat2
+>>>>>>> f654619f38d50115374bb06faafdf680c60aee6e
