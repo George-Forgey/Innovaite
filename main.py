@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import json
+from sentiment import analyze_sentiment;
 
 # -------------------------
 # Helper Functions for Auth
@@ -105,7 +106,7 @@ def add_poll_reply(poll_id, reply):
     except:
         replies, usernames = [], []
     if st.session_state.username in usernames:
-        return "You have already submitted a reply for this poll."
+        return False
     replies.append(reply)
     usernames.append(st.session_state.username)
     df.at[index, "replies"] = json.dumps(replies)
