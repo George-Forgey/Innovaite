@@ -109,6 +109,7 @@ def add_poll_reply(poll_id, reply):
         user_index = usernames.index(st.session_state.username)
         replies[user_index] = reply
         df.at[index, "replies"] = json.dumps(replies)
+        df.to_csv(POLLS_CSV, index=False)
         return False
     replies.append(reply)
     usernames.append(st.session_state.username)
