@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import json
-from sentiment import analyze_sentiment;
+from sentiment import analyze_sentiment
 
 # -------------------------
 # Helper Functions for Auth
