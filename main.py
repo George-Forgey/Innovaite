@@ -4,6 +4,10 @@ import os
 import json
 import ast
 from sentiment import analyze_sentiment
+from analytics import analytics
+from polls import polls
+from home import home
+from problems import problems
 from better_profanity import profanity
 from keywords import get_keywords
 from better_profanity import profanity
@@ -369,6 +373,21 @@ def main():
         st.image("prism-logo.png", use_container_width=True)
     else:
         st.sidebar.write(f"Logged in as: **{st.session_state.username}**")
+        st.sidebar.title("Navigation")
+        #page = st.sidebar.button(["Home", "Dashboard", "Reports", "Notifications"])
+
+        if st.sidebar.button("Home"):
+            st.session_state.page = "Home"
+        if st.sidebar.button("Submit a Problem"):
+            st.session_state.page = "Submit a Problem"
+        if st.sidebar.button("Polls"):
+            st.session_state.page = "Polls"
+        if st.session_state.get("username") == "example admin":
+            if st.sidebar.button("Admin Dashboard"):
+                st.session_state.page = "Admin Dashboard"
+        if st.sidebar.button("Analytics"):
+            st.session_state.page = "Analytics"
+
         if st.sidebar.button("Logout"):
             st.session_state.logged_in = False
             st.rerun()  # refresh the app
@@ -382,10 +401,19 @@ def main():
                 admin_dashboard()
             else:
                 st.error("Unauthorized access!")
-        elif option == "Polls":
-            polls_page()
-        elif option == "Account Settings":
-            account_settings_page()
+        if st.session_state.page == "Home":
+            home()
+        elif st.session_state.page == "Submit a Problem":
+            problems()
+        elif st.session_state.page == "Admin Dashboard":
+            if st.session_state.get("username") == "example admin":
+                admin_dashboard()
+            else:
+                st.error("Unauthorized access!")
+        elif st.session_state.page == "Polls":
+            polls()
+        elif st.session_state.page == "Analytics":
+            analytics()
 
 if __name__ == '__main__':
     main()
