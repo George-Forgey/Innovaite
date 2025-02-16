@@ -94,6 +94,9 @@ def save_poll(question):
     return new_id
 
 def add_poll_reply(poll_id, reply):
+    if (profanity.contains_profanity(reply)):
+        st.info("Your reply cannot contain profanity!")
+        return
     """Add a reply to a specific poll by poll_id."""
     df = load_polls()
     poll_row = df.loc[df["poll_id"] == poll_id]
