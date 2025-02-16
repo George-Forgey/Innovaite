@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import json
 from sentiment import analyze_sentiment
+from better_profanity import profanity
 
 # -------------------------
 # Helper Functions for Auth
@@ -106,6 +107,10 @@ def add_poll_reply(poll_id, reply):
     except:
         replies, usernames = [], []
     if st.session_state.username in usernames:
+        user_index = usernames.index(st.session_state.username)
+        replies[user_index] = reply
+        df.at[index, "replies"] = json.dumps(replies)
+        df.to_csv(POLLS_CSV, index=False)
         return False
     replies.append(reply)
     usernames.append(st.session_state.username)
@@ -140,8 +145,8 @@ if "problems" not in st.session_state:
 
 # 1. Home / Landing Page (with role-specific options)
 def show_home():
-    st.header("Prism: Problem Reporting & Feedback App")
-    st.write("Created by: Sid Patel, George Forgey, Daniel Nakhooda, Geo Limena, Benjy Alwis")
+    st.header("Prisim: Problem Reporting & Feedback App")
+    st.write("Created by: Sid Patel, George Forgey, Daniel Nakhooda, Gio Limena")
     st.write("Welcome! Submit your problem or view aggregated feedback.")
     # Display different options based on user role
     if st.session_state.username == "example admin":
@@ -151,23 +156,50 @@ def show_home():
     option = st.selectbox("Select an option:", options)
     return option
 
+# -------------------------
+# Problem Stuff
+# -------------------------
+PROBLEMS_CSV = "./csvs/problems.csv"
+
+def load_problems():
+    if os.path.exists(PROBLEMS_CSV):
+        return pd.read_csv(PROBLEMS_CSV)
+    else:
+        df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "embedding"])
+        df.to_csv(PROBLEMS_CSV, index=False)
+        return df
+
 # 2. Problem Submission
 def submit_problem():
+
+    df = load_problems()
     st.header("Submit Your Problem")
     problem_text = st.text_area("Describe your problem:", height=150)
     if st.button("Submit"):
+        if (profanity.contains_profanity(problem_text)):
+            st.info("Your message cannot contain profanity!")
+            return
+
         sentiment = analyze_sentiment(problem_text)          # Replace with your function
         keywords = extract_keywords(problem_text)            # Replace with your function
         embedding = generate_embedding(problem_text)         # Replace with your function
         problem_entry = {
+            "problem_id": len(st.session_state.problems) + 1,
+            "username": st.session_state.username,
             "text": problem_text,
             "sentiment": sentiment,
             "keywords": keywords,
             "embedding": embedding,
-            "id": len(st.session_state.problems) + 1
         }
         st.session_state.problems.append(problem_entry)
         st.success("Problem submitted successfully!")
+
+        
+    
+        new_entry = pd.DataFrame([problem_entry])
+        df = pd.concat([df, new_entry], ignore_index=True)
+        df.to_csv(PROBLEMS_CSV, index=False)
+      
 
 # 3. Display Aggregated Problems
 def display_problems():
