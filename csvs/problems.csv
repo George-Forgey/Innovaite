@@ -1,3 +1,2 @@
-problem_id,username,text,sentiment,keywords,embedding
-1,qwe,hi,Neutral,"['keyword1', 'keyword2']","[0.1, 0.2, 0.3]"
-1,qwe,hi,Neutral,"['keyword1', 'keyword2']","[0.1, 0.2, 0.3]"
+problem_id,username,text,sentiment,keywords,embedding,problem,category
+1,qwe,,NEGATIVE (1.00),"['safe walking', 'walking home', 'feel safe', 'home night', 'night']",,I don't feel safe walking home at night,crime/safety
