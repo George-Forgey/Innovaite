@@ -210,9 +210,8 @@ def main():
             login_page()
         else:
             signup_page()
-        st.title("Welcome to Prism")
-        st.write("Your platform for submitting and resolving community problems.")    
-        st.info("Welcome to Prism, the online Problem Identifier and Solver used to help resolve issues within your community. After logging in, you will be able to submit your own problems around the community that will be analysed and sent to your local officials to be resolved around the community.")
+        st.title("Welcome to Prism")  
+        st.info("Prism, the online Problem Identifier and Solver used to help resolve issues within your community. After logging in, you will be able to submit your own problems around the community that will be analysed and sent to your local officials to be resolved around the community.")
         st.image("prism-logo.png", use_container_width=True)
     else:
         st.sidebar.write(f"Logged in as: **{st.session_state.username}**")

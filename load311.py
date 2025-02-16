@@ -29,7 +29,7 @@ def load_num_311s(num):
     df = load_311s()
     df_problems = load_problems();
 
-    for index, row in df.head().iterrows():
+    for index, row in df.head(num).iterrows():
         title = row["case_title"]
         subject = row["subject"]
         reason = row["reason"]
@@ -46,7 +46,7 @@ def load_num_311s(num):
             
         problem_entry = {
             "problem_id": df_problems["problem_id"].max() + 1,
-            "username": "Boston",
+            "username": "unknown",
             "problem": text,
             "sentiment": sentiment,
             "keywords": keywords,
@@ -59,4 +59,4 @@ def load_num_311s(num):
 
     return
 
-load_num_311s(10)
+load_num_311s(1000)
