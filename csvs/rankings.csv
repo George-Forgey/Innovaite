@@ -1,11 +1,11 @@
-Name,Category,Number of Reports
-"ex","cat",0
-"ex","cat",0
-"ex","cat",0
-"ex","cat",0
-"ex","cat",0
-"ex","cat",0
-"ex","cat",0
-"ex","cat",0
-"ex","cat",0
-"ex","cat",0
+Category,Number of Reports
+"environmental",0
+"housing",0
+"infrastructure",0
+"crime/safety",0
+"healthcare",0
+"public spaces",0
+"transportation",0
+"education",0
+"economy/employment",0
+"digital access/technology",0
