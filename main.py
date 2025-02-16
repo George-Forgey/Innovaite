@@ -1,303 +1,29 @@
 import streamlit as st
+import ast
 import pandas as pd
 import os
 import json
-import ast
-from sentiment import analyze_sentiment
-from analytics import analytics
-from polls import polls
-from home import home
-from problems import problems, load_problems, submit_problem
-from polls import polls_page
-from settings import settings
-from load import load_users, load_polls, count_users
-from settings import account_settings_page
-from faq import faq
+import numpy as np
+
 from better_profanity import profanity
+# If using the local categorization approach:
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from transformers import pipeline
+
+# KeyBERT (if you need it for get_keywords):
+from keybert import KeyBERT
+
+# HUGGING FACE INFERENCE
+from huggingface_hub import InferenceClient
+
+from sentiment import analyze_sentiment
 from keywords import get_keywords
-from categorize import assign_category, model as cat_model, category_centroids
+from categorize import assign_category
+
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from keybert import KeyBERT
-import torch
-from transformers import pipeline
-
-
-USERS_CSV = "./csvs/users.csv"
-POLLS_CSV = "./csvs/polls.csv"
-RANKINGS_CSV = "./csvs/rankings.csv"
-PROBLEMS_CSV = "./csvs/problems.csv"
-
-# -------------------------
-# Helper Functions for Auth
-# -------------------------
-USERS_CSV = "./csvs/users.csv"
-
-def save_user(username, password, admin):
-    """Append a new user to the CSV file."""
-    df = load_users()
-    # Check if username already exists
-    if username in df['username'].values:
-        return False
-    new_user = pd.DataFrame([[username, password, admin]], columns=["username", "password", "admin"])
-    df = pd.concat([df, new_user], ignore_index=True)
-    df.to_csv(USERS_CSV, index=False)
-    return True
-
-def validate_login(username, password):
-    """Check whether the provided username and password match a record."""
-    try:
-        df = load_users()
-        user_record = df[(df["username"] == username) & (df["password"] == password)]
-        st.session_state.admin = user_record.iloc[0]["admin"]
-        #st.session_state.admin = bool(user_record.iloc[0]["admin"])
-        return not user_record.empty
-    except:
-        return False
-
-# -------------------------
-# Authentication Pages
-# -------------------------
-def login_page():
-    st.sidebar.subheader("Login")
-    username = st.sidebar.text_input("Username", key="login_username")
-    password = st.sidebar.text_input("Password", type="password", key="login_password")
-    if st.sidebar.button("Login"):
-        if validate_login(username, password):
-            st.session_state.logged_in = True
-            st.session_state.username = username
-            st.sidebar.success("Logged in successfully!")
-            st.rerun()
-        else:
-            st.sidebar.error("Invalid username or password.")
-
-def signup_page():
-    st.sidebar.subheader("Sign Up")
-    new_username = st.sidebar.text_input("Choose a Username", key="signup_username")
-    new_password = st.sidebar.text_input("Choose a Password", type="password", key="signup_password")
-    if st.sidebar.button("Sign Up"):
-        if new_username == "" or new_password == "":
-            st.sidebar.error("Please enter a username and password.")
-        else:
-            success = save_user(new_username, new_password, False)
-            if success:
-                st.sidebar.success("Sign up successful! You can now log in.")
-            else:
-                st.sidebar.error("Username already exists. Choose a different one.")
-
-# -------------------------
-# Polls Storage Helpers
-# -------------------------
-POLLS_CSV = "./csvs/polls.csv"
-
-def save_poll(question):
-    """Save a new poll with a unique poll_id and empty replies list."""
-    df = load_polls()
-    if df.empty:
-        new_id = 1
-    else:
-        new_id = int(df["poll_id"].max()) + 1
-    new_poll = pd.DataFrame([[new_id, question, json.dumps([]), json.dumps([])]],
-                            columns=["poll_id", "question", "replies", "usernames"])
-    df = pd.concat([df, new_poll], ignore_index=True)
-    df.to_csv(POLLS_CSV, index=False)
-    return new_id
-
-
-
-# -------------------------
-# Problem Storage and Processing Functions
-# -------------------------
-# Remove the embedding field since it is no longer used.
-PROBLEMS_CSV = "./csvs/problems.csv"
-
-# -------------------------
-# Problem Stuff
-# -------------------------
-PROBLEMS_CSV = "./csvs/problems.csv"
-
-def load_problems():
-    if os.path.exists(PROBLEMS_CSV):
-        return pd.read_csv(PROBLEMS_CSV)
-    else:
-        df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "embedding"])
-        df.to_csv(PROBLEMS_CSV, index=False)
-        return df
-
-# -------------------------
-# Problem Submission with Automatic Categorization, Sentiment, and Keyword Extraction
-# -------------------------
-PROBLEMS_CSV = "./csvs/problems.csv"
-
-def load_problems():
-    if os.path.exists(PROBLEMS_CSV):
-        return pd.read_csv(PROBLEMS_CSV)
-    else:
-        df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "embedding"])
-        df.to_csv(PROBLEMS_CSV, index=False)
-        return df
-
-# 3. Display Aggregated Problems
-def display_problems():
-    st.header("Reported Problems")
-    if not st.session_state.problems:
-        st.info("No problems reported yet.")
-        return
-    clusters = [{"label": "All Problems", "problems": st.session_state.problems}]  # Dummy clustering: all problems in one cluster
-    for cluster in clusters:
-        st.subheader(f"Cluster: {cluster['label']}")
-        for problem in cluster['problems']:
-          if st.button(f"View Problem {problem['problem_id']}", key=problem['problem_id']):
-              show_problem_detail(problem)
-
-# -------------------------
-# Detailed Problem View
-# -------------------------
-def show_problem_detail(problem):
-    st.header(f"Problem Detail (ID: {problem['problem_id']})")
-    st.markdown("**Problem Statement:**")
-    st.write(problem["problem"])
-    st.markdown("**Sentiment:**")
-    st.write(problem["sentiment"])
-    st.markdown("**Keywords:**")
-    if isinstance(problem["keywords"], list):
-        st.write(", ".join(problem["keywords"]))
-    else:
-        st.write(problem["keywords"])
-    st.markdown("**Category:**")
-    st.write(problem.get("category", "Not assigned"))
-
-# -------------------------
-# Admin Dashboard (for example admin)
-# -------------------------
-def admin_dashboard():
-    st.header("Admin Dashboard")
-    st.write("Create polls, view all polls, and see their replies.")
-    poll_question = st.text_input("Enter poll question:", key="admin_poll_question")
-    if st.button("Create Poll"):
-        if poll_question:
-            new_id = save_poll(poll_question)
-            st.success(f"Poll created with ID: {new_id}")
-            st.rerun()
-        else:
-            st.error("Please enter a poll question.")
-    st.subheader("All Polls")
-    df = load_polls()
-    if df.empty:
-        st.info("No polls created yet.")
-    else:
-        for idx, row in df.iterrows():
-            st.markdown(f"**Poll {int(row['poll_id'])}: {row['question']}**")
-            try:
-                replies = json.loads(row['replies'])
-            except:
-                replies = []
-            if replies:
-                st.write("Replies:")
-                for r in replies:
-                    st.write(f"- {r}")
-            else:
-                st.write("No replies yet.")
-
-# -------------------------
-# Main App Execution
-# -------------------------
-def main():
-    # Initialize session state for problems if not already set
-    if "problems" not in st.session_state:
-        st.session_state.problems = []
-    
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-
-    if not st.session_state.logged_in:
-        st.sidebar.title("User Statistics")
-        st.sidebar.write(f"👥 Total Users: {count_users()}")
-        st.sidebar.write(f"🟢 Active Users: {1}")
-        st.sidebar.title("Authentication")
-        auth_mode = st.sidebar.radio("Select Mode", ("Login", "Sign Up"))
-        if auth_mode == "Login":
-            login_page()
-        else:
-            signup_page()
-        st.title("Welcome to Prism")  
-        st.info("Prism, the online Problem Identifier and Solver used to help resolve issues within your community. After logging in, you will be able to submit your own problems around the community that will be analysed and sent to your local officials to be resolved around the community.")
-        st.image("prism-logo.png", use_container_width=True)
-    else:
-        st.sidebar.write(f"Logged in as: **{st.session_state.username}**")
-        st.sidebar.title("Navigation")
-
-        if st.sidebar.button("Home"):
-            st.session_state.page = "Home"
-        if st.sidebar.button("Submit a Problem"):
-            st.session_state.page = "Submit a Problem"
-        if st.sidebar.button("Polls"):
-            st.session_state.page = "Polls"
-        if st.sidebar.button("Analytics"):
-            st.session_state.page = "Analytics"
-        if st.sidebar.button("FAQ"):
-            st.session_state.page = "FAQ" 
-        if st.sidebar.button("About Us"):
-            st.session_state.page = "About Us"
-
-        st.sidebar.markdown("<hr style='border:0.5px solid white; margin-top:10px; margin-bottom:25px;'>", unsafe_allow_html=True)
-
-        if st.sidebar.button("Settings"):
-            st.session_state.page = "Settings"
-        if st.session_state.admin:
-            if st.sidebar.button("Admin Dashboard"):
-                st.session_state.page = "Admin Dashboard"
-                
-        if st.sidebar.button("Logout"):
-            st.session_state.logged_in = False
-            st.rerun()  # refresh the app
-            if st.session_state.admin:
-                admin_dashboard()
-            else:
-                st.error("Unauthorized access!")
-                     
-        if "page" not in st.session_state:
-            st.session_state.page = "Home" 
-
-        if st.session_state.page == "Home":
-            home()
-        elif st.session_state.page == "Submit a Problem":
-            problems()
-            submit_problem()
-        elif st.session_state.page == "Settings":
-            settings()
-            account_settings_page()
-        elif st.session_state.page == "Admin Dashboard":
-            if st.session_state.get("username") == "example admin":
-                admin_dashboard()
-            else:
-                st.error("Unauthorized access!")
-        elif st.session_state.page == "Polls":
-            polls()
-            polls_page()
-        elif st.session_state.page == "Analytics":
-            analytics()
-        elif st.session_state.page == "FAQ":
-            faq()
-        elif st.session_state.page == "About Us":
-            about()        
-
-def about():
-    st.title("About Us")
-    st.write("We provide a platform where communities can actively report societal problems, see how many others share their concerns, and track which issues have the greatest impact. By fostering transparency and collaboration, we empower both individuals and administrators to prioritize the most pressing challenges. Our AI-driven solution generator helps admins develop actionable responses based on past data, existing limitations, and community insights. Through iterative feedback and refinement, we ensure that solutions are practical, effective, and embraced by the people they affect. Our goal is to create a more responsive, informed, and engaged society—where problems don’t just get noticed but actively get solved.")
-    st.write("Sid Patel: Computer Science/AI Major + Business Admin Minor @ Northeastern")
-    st.write("George Forgey: Computer Science/AI Major + Math Minor @ Northeastern")
-    st.write("Daniel Nakhooda: Computer Science/AI Major @ Northeastern")
-    st.write("Gio Limena: Computer Science/Computer Engineering @ Northeastern")
-    st.write("Benji Alwis: Computer Science/AI Major @ Northeastern")
-    st.write("Gio Jean: Computer Science/AI Major + Business Admin Minor @ Northeastern")
-
-    st.image("AboutPhoto.jpg", caption="About Us Photo", width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto", use_container_width=False)
-
-def analytics():
-    st.title("Analytics")
-    st.write("Welcome to the analytics page.")
 
 # Define the preset categories with seed examples
 preset_categories = {
@@ -384,47 +110,512 @@ for category, seed_texts in preset_categories.items():
     centroid = np.mean(embeddings, axis=0)
     category_centroids[category] = centroid
 
-def assign_category(text, model, category_centroids):
-    # Encode the new text into an embedding
-    text_embedding = model.encode([text])[0]  # [0] to get the vector from the list
+# -------------------------
+# FILE PATHS
+# -------------------------
+USERS_CSV = "./csvs/users.csv"
+POLLS_CSV = "./csvs/polls.csv"
+PROBLEMS_CSV = "./csvs/problems.csv"
+RANKINGS_CSV = "./csvs/rankings.csv"
 
-    # Compute cosine similarity with each category centroid
-    similarities = {}
-    for category, centroid in category_centroids.items():
-        # Compute the cosine similarity (using 2D arrays for compatibility)
-        sim = cosine_similarity([text_embedding], [centroid])[0][0]
-        similarities[category] = sim
+# -------------------------
+# Hugging Face Inference for RAG
+# -------------------------
+repo_id = "mistralai/Mixtral-8x7B-Instruct-v0.1"
+hf_token = "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"
+llm_client = InferenceClient(model=repo_id, token=hf_token, timeout=120)
 
-    # Loop over the similarity scores and print each one
-    print("Similarity Scores:")
-    for category, score in similarities.items():
-        print(f"  {category}: {score:.3f}")
+def generate_rag_solution(context, user_instructions, existing_solution=None):
+    PROMPT = """
+Use the following pieces of information enclosed in <context> tags to refine the existing solution.
+<context>
+{context}
+</context>
+<question>
+{question}
+</question>
+"""
+    question_content = user_instructions.strip()
+    if existing_solution:
+        question_content += f"\n\nExisting solution:\n{existing_solution}"
 
-    # Find the category with the highest similarity
-    assigned_category = max(similarities, key=similarities.get)
-    return assigned_category, similarities
+    prompt_text = PROMPT.format(context=context, question=question_content)
+    answer = llm_client.text_generation(prompt_text, max_new_tokens=1000).strip()
+    return answer
 
+# -------------------------
+# Auth Helpers
+# -------------------------
+def load_users():
+    if os.path.exists(USERS_CSV):
+        return pd.read_csv(USERS_CSV)
+    else:
+        df = pd.DataFrame(columns=["username", "password", "admin"])
+        df.to_csv(USERS_CSV, index=False)
+        return df
+
+def save_user(username, password, admin):
+    df = load_users()
+    if username in df['username'].values:
+        return False
+    new_user = pd.DataFrame([[username, password, admin]], columns=["username", "password", "admin"])
+    df = pd.concat([df, new_user], ignore_index=True)
+    df.to_csv(USERS_CSV, index=False)
+    return True
+
+def validate_login(username, password):
+    df = load_users()
+    user_record = df[(df["username"] == username) & (df["password"] == password)]
+    if not user_record.empty:
+        admin_val = user_record.iloc[0]["admin"]
+        st.session_state.admin = True if str(admin_val).lower() == "true" else False
+        return True
+    return False
+
+def login_page():
+    st.sidebar.subheader("Login")
+    username = st.sidebar.text_input("Username", key="login_username")
+    password = st.sidebar.text_input("Password", type="password", key="login_password")
+    if st.sidebar.button("Login"):
+        if validate_login(username, password):
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            st.sidebar.success("Logged in successfully!")
+            st.rerun()
+        else:
+            st.sidebar.error("Invalid username or password.")
+
+def signup_page():
+    st.sidebar.subheader("Sign Up")
+    new_username = st.sidebar.text_input("Choose a Username", key="signup_username")
+    new_password = st.sidebar.text_input("Choose a Password", type="password", key="signup_password")
+    if st.sidebar.button("Sign Up"):
+        if new_username == "" or new_password == "":
+            st.sidebar.error("Please enter a username and password.")
+        else:
+            success = save_user(new_username, new_password, False)
+            if success:
+                st.sidebar.success("Sign up successful! You can now log in.")
+            else:
+                st.sidebar.error("Username already exists. Choose a different one.")
+
+# -------------------------
+# Poll Storage
+# -------------------------
+def load_polls():
+    if os.path.exists(POLLS_CSV):
+        df = pd.read_csv(POLLS_CSV)
+    else:
+        df = pd.DataFrame(columns=["poll_id", "question", "replies", "usernames", "poll_version"])
+        df.to_csv(POLLS_CSV, index=False)
+        return df
+
+    if "poll_version" not in df.columns:
+        df["poll_version"] = 1
+    return df
+
+def save_polls_df(df):
+    df.to_csv(POLLS_CSV, index=False)
+
+def save_poll(question):
+    df = load_polls()
+    if df.empty:
+        new_id = 1
+    else:
+        new_id = int(df["poll_id"].max()) + 1
+    new_poll = pd.DataFrame([[new_id, question, json.dumps([]), json.dumps([]), 1]],
+                            columns=["poll_id", "question", "replies", "usernames", "poll_version"])
+    df = pd.concat([df, new_poll], ignore_index=True)
+    save_polls_df(df)
+    return new_id
+
+def add_poll_reply(poll_id, reply):
+    df = load_polls()
+    poll_row = df.loc[df["poll_id"] == poll_id]
+    if poll_row.empty:
+        return False
+    index = poll_row.index[0]
+    current_version = int(df.at[index, "poll_version"])
+
+    try:
+        replies = json.loads(df.at[index, "replies"]) if df.at[index, "replies"] else []
+    except:
+        replies = []
+    try:
+        usernames = json.loads(df.at[index, "usernames"]) if df.at[index, "usernames"] else []
+    except:
+        usernames = []
+
+    label, score = analyze_sentiment(reply)
+    sentiment = f"{label} ({score:.2f})"
+    keywords = get_keywords(reply)
+
+    if st.session_state.username in usernames:
+        user_index = usernames.index(st.session_state.username)
+        replies[user_index] = {
+            "reply": reply,
+            "sentiment": sentiment,
+            "keywords": keywords,
+            "version": current_version
+        }
+        df.at[index, "replies"] = json.dumps(replies)
+        save_polls_df(df)
+        return False
+
+    replies.append({
+        "reply": reply,
+        "sentiment": sentiment,
+        "keywords": keywords,
+        "version": current_version
+    })
+    usernames.append(st.session_state.username)
+    df.at[index, "replies"] = json.dumps(replies)
+    df.at[index, "usernames"] = json.dumps(usernames)
+    save_polls_df(df)
+    return True
+
+# -------------------------
+# Problems Storage
+# -------------------------
+def load_problems():
+    if os.path.exists(PROBLEMS_CSV):
+        return pd.read_csv(PROBLEMS_CSV)
+    else:
+        df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "category"])
+        df.to_csv(PROBLEMS_CSV, index=False)
+        return df
+
+def save_problems_df(df):
+    df.to_csv(PROBLEMS_CSV, index=False)
+
+
+# -------------------------
+# Submit Problem
+# -------------------------
+def submit_problem():
+    st.header("Submit Your Problem")
+    problem_text = st.text_area("Describe your problem:", height=150)
+    if st.button("Submit"):
+        if profanity.contains_profanity(problem_text):
+            st.info("Your message cannot contain profanity!")
+            return
+        assigned_category, sim_scores = assign_category(problem_text, model, category_centroids)
+        label, score = analyze_sentiment(problem_text)
+        sentiment = f"{label} ({score:.2f})"
+        keywords = get_keywords(problem_text)
+
+        df = load_problems()
+        if df.empty:
+            new_id = 1
+        else:
+            new_id = df["problem_id"].max() + 1
+
+        problem_entry = {
+            "problem_id": new_id,
+            "username": st.session_state.username,
+            "problem": problem_text,
+            "sentiment": sentiment,
+            "keywords": str(keywords),
+            "category": assigned_category
+        }
+        df = pd.concat([df, pd.DataFrame([problem_entry])], ignore_index=True)
+        save_problems_df(df)
+
+        st.success("Problem submitted successfully!")
+
+# -------------------------
+# "View Problems" Page (Replaces Old "Analytics" Page)
+# -------------------------
+def display_problems():
+    st.header("Reported Problems")
+    df = load_problems()
+    if df.empty:
+        st.info("No problems reported yet.")
+        return
+
+    # Group
+    problems_by_category = {}
+    for _, row in df.iterrows():
+        c = row.get("category", "Uncategorized")
+        if c not in problems_by_category:
+            problems_by_category[c] = []
+        problems_by_category[c].append(row)
+
+    sorted_cats = sorted(problems_by_category.items(), key=lambda x: len(x[1]), reverse=True)
+
+    if st.session_state.get("admin", False):
+        # Admin: can generate solutions
+        for category, plist in sorted_cats:
+            st.subheader(f"{category.title()} ({len(plist)})")
+            data = []
+            for p in plist:
+                data.append({
+                    "Problem ID": p["problem_id"],
+                    "Username": p["username"],
+                    "Problem": p["problem"],
+                    "Sentiment": p["sentiment"],
+                    "Keywords": p["keywords"],
+                    "Category": p["category"]
+                })
+            df_cat = pd.DataFrame(data)
+            st.dataframe(df_cat, use_container_width=True)
+
+            # Create solution button
+            for i, p in enumerate(plist):
+                pid = p["problem_id"]
+                if st.button(f"Create Solution for Problem {pid}", key=f"create_sol_{pid}_{i}"):
+                    st.session_state.rag_active = True
+                    st.session_state.rag_mode = "problem_solution"
+                    st.session_state.current_problem_id = pid
+                    # gather context
+                    lines = [f"(ProblemID {x['problem_id']}) {x['problem']}" for x in plist]
+                    st.session_state.rag_context = "\n".join(lines)
+                    st.session_state.rag_solution_text = ""
+                    st.rerun()
+    else:
+        # Non-admin
+        for category, plist in sorted_cats:
+            st.subheader(f"{category.title()} ({len(plist)})")
+            for p in plist:
+                st.write(p["problem"])
+
+    # If "Create Solution"
+    if st.session_state.get("rag_active", False) and st.session_state.get("rag_mode") == "problem_solution":
+        handle_rag_solution_for_problem()
+
+def handle_rag_solution_for_problem():
+    st.write("---")
+    st.write("## RAG: Generate/Refine a Solution for this Problem")
+    admin_instructions = st.text_area("Additional Admin Instructions", key="rag_admin_instructions")
+
+    if st.session_state.rag_solution_text:
+        st.markdown("### Current Proposed Solution")
+        st.write(st.session_state.rag_solution_text)
+
+    if st.button("Generate / Refine Solution"):
+        full_context = st.session_state.rag_context
+        new_solution = generate_rag_solution(full_context, admin_instructions, st.session_state.rag_solution_text)
+        st.session_state.rag_solution_text = new_solution
+        st.rerun()
+
+    if st.session_state.rag_solution_text:
+        if st.button("Approve Solution"):
+            poll_id = save_poll(st.session_state.rag_solution_text)
+            st.success(f"Solution approved and new Poll created with ID: {poll_id}!")
+            st.session_state.rag_active = False
+            st.session_state.rag_mode = None
+            st.session_state.current_problem_id = None
+            st.session_state.rag_context = ""
+            st.session_state.rag_solution_text = ""
+            st.rerun()
+
+# -------------------------
+# Admin Dashboard (poll recalc)
+# -------------------------
+def admin_dashboard():
+    st.header("Admin Dashboard")
+    st.write("Create polls, view all polls, and see their replies with sentiment analysis. You can also recalculate solutions.")
+
+    poll_question = st.text_input("Enter poll question:", key="admin_poll_question")
+    if st.button("Create Poll"):
+        if poll_question:
+            new_id = save_poll(poll_question)
+            st.success(f"Poll created with ID: {new_id}")
+            st.rerun()
+        else:
+            st.error("Please enter a poll question.")
+
+    st.subheader("All Polls")
+    df = load_polls()
+    if df.empty:
+        st.info("No polls created yet.")
+    else:
+        for _, row in df.iterrows():
+            poll_id = int(row['poll_id'])
+            question = row['question']
+            poll_version = int(row.get("poll_version", 1))
+
+            # current version replies
+            try:
+                replies = json.loads(row['replies'])
+            except:
+                replies = []
+            current_version_replies = [r for r in replies if r.get("version") == poll_version]
+
+            sentiment_counts = {}
+            for r in current_version_replies:
+                label = r.get("sentiment", "").split()[0]
+                if label:
+                    sentiment_counts[label] = sentiment_counts.get(label, 0) + 1
+            sentiment_info = ", ".join([f"{k}: {v}" for k, v in sentiment_counts.items()]) if sentiment_counts else "No replies"
+
+            st.markdown(f"**Poll {poll_id} (Version {poll_version}):** {question}")
+            st.write(f"Sentiment (current version): {sentiment_info}")
+
+            if current_version_replies:
+                st.write("Current version replies:")
+                for r in current_version_replies:
+                    st.write(f"- {r.get('reply','')} (Sentiment: {r.get('sentiment','')})")
+            else:
+                st.write("No replies for this version yet.")
+
+            if st.button(f"Recalculate Solution for Poll {poll_id}", key=f"recalc_{poll_id}"):
+                st.session_state.rag_active = True
+                st.session_state.rag_mode = "poll_recalculation"
+                st.session_state.current_poll_id = poll_id
+
+                # gather full context
+                full_history_text = []
+                for rr in replies:
+                    ver = rr.get("version")
+                    sent = rr.get("sentiment", "")
+                    rep = rr.get("reply", "")
+                    full_history_text.append(f"[v{ver} sentiment={sent}]: {rep}")
+                st.session_state.rag_context = f"Existing poll text: {question}\nAll replies:\n" + "\n".join(full_history_text)
+                st.session_state.rag_solution_text = ""
+                st.rerun()
+
+    if st.session_state.get("rag_active", False) and st.session_state.get("rag_mode") == "poll_recalculation":
+        handle_rag_solution_for_poll()
+
+def handle_rag_solution_for_poll():
+    st.write("---")
+    st.write("## RAG: Generate/Refine a New Solution for This Poll")
+    admin_instructions = st.text_area("Additional Admin Instructions", key="rag_admin_instructions_poll")
+
+    if st.session_state.rag_solution_text:
+        st.markdown("### Current Proposed Solution")
+        st.write(st.session_state.rag_solution_text)
+
+    if st.button("Generate / Refine Poll Solution"):
+        full_context = st.session_state.rag_context
+        new_solution = generate_rag_solution(full_context, admin_instructions, st.session_state.rag_solution_text)
+        st.session_state.rag_solution_text = new_solution
+        st.rerun()
+
+    if st.session_state.rag_solution_text:
+        if st.button("Approve New Poll Solution"):
+            df = load_polls()
+            poll_id = st.session_state.current_poll_id
+            row_idx = df.index[df["poll_id"] == poll_id]
+            if not row_idx.empty:
+                idx = row_idx[0]
+                df.at[idx, "question"] = st.session_state.rag_solution_text
+                df.at[idx, "poll_version"] = df.at[idx, "poll_version"] + 1
+                save_polls_df(df)
+
+            st.success("Poll updated with new solution. Sentiment counts reset for new version!")
+            st.session_state.rag_active = False
+            st.session_state.rag_mode = None
+            st.session_state.current_poll_id = None
+            st.session_state.rag_context = ""
+            st.session_state.rag_solution_text = ""
+            st.rerun()
+
+# -------------------------
+# Polls Page (non-admin)
+# -------------------------
+def polls_page():
+    st.header("Current Polls")
+    df = load_polls()
+    if df.empty:
+        st.info("No polls available at the moment.")
+        return
+
+    for _, row in df.iterrows():
+        poll_id = int(row['poll_id'])
+        question = row['question']
+        poll_version = int(row.get("poll_version", 1))
+
+        try:
+            replies = json.loads(row['replies'])
+        except:
+            replies = []
+
+        st.subheader(f"Poll {poll_id}: {question}")
+        current_version_replies = [r for r in replies if r.get("version") == poll_version]
+        if current_version_replies:
+            st.write("Replies (current version):")
+            for r in current_version_replies:
+                st.write(f"- {r.get('reply','')} | Sentiment: {r.get('sentiment','')}")
+        else:
+            st.write("No replies yet for this version.")
+
+        reply = st.text_input(f"Your reply for poll {poll_id}", key=f"reply_{poll_id}")
+        if st.button(f"Submit Reply for poll {poll_id}", key=f"submit_reply_{poll_id}"):
+            if reply:
+                if profanity.contains_profanity(reply):
+                    st.info("Your reply cannot contain profanity!")
+                else:
+                    add_poll_reply(poll_id, reply)
+                    st.success("Reply submitted!")
+                    st.rerun()
+            else:
+                st.error("Please enter a reply.")
+
+# -------------------------
+# Additional Pages
+# -------------------------
 def faq():
-    
+    st.title("FAQ")
     faq_data = {
-    "How do I submit a problem?": "To submit a problem, go to the 'Submit a Problem' page, describe your issue, and click 'Submit'.",
-    "How can I view my submitted problems?": "You can view your submitted problems by navigating to the 'View Problems' page.",
-    "Who can access the admin dashboard?": "Only users with administrative privileges can access the admin dashboard.",
-    "How do I change my account settings?": "Go to the 'Settings' page, where you can update your account preferences.",
-    "What happens after I submit a problem?": "After submission, your problem is categorized and analyzed for sentiment. You can track its status in the 'View Problems' section.",
+        "How do I submit a problem?": "Go to the 'Submit a Problem' page, describe your issue, and click 'Submit'.",
+        "How can I view my submitted problems?": "Navigate to the 'View Problems' page.",
+        "Who can access the admin dashboard?": "Only users with administrative privileges can see it."
     }
+    selected = st.selectbox("Select a question:", list(faq_data.keys()))
+    st.text_area("Answer:", faq_data[selected], height=80, disabled=True)
 
-    st.title("Frequently Asked Questions")
+def about():
+    st.title("About Us")
+    st.write("We provide a platform where communities can actively report societal problems, see how many others share their concerns, and track which issues have the greatest impact. By fostering transparency and collaboration, we empower both individuals and administrators to prioritize the most pressing challenges. Our AI-driven solution generator helps admins develop actionable responses based on past data, existing limitations, and community insights. Through iterative feedback and refinement, we ensure that solutions are practical, effective, and embraced by the people they affect. Our goal is to create a more responsive, informed, and engaged society—where problems don’t just get noticed but actively get solved.")
 
-    selected_question = st.selectbox("Select a question:", list(faq_data.keys()))
+    st.image("AboutPhoto.jpg", caption="About Us Photo", width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto", use_container_width=False)
 
-    st.text_area("Answer:", faq_data[selected_question], height=100, disabled=True)
+def settings():
+    st.title("Settings")
+    st.write("Adjust your preferences here.")
 
-def home():
+def account_settings_page():
+    st.header("Account Settings")
+    if st.button("Delete Account"):
+        # Remove from users
+        dfUsers = load_users()
+        dfUsers = dfUsers[dfUsers["username"] != st.session_state.username]
+        dfUsers.to_csv(USERS_CSV, index=False)
+
+        # Remove from problems
+        dfProb = load_problems()
+        dfProb = dfProb[dfProb["username"] != st.session_state.username]
+        save_problems_df(dfProb)
+
+        # Remove from polls replies
+        dfPoll = load_polls()
+        for idx, row in dfPoll.iterrows():
+            try:
+                ulist = json.loads(row["usernames"])
+                rlist = json.loads(row["replies"])
+            except:
+                ulist, rlist = [], []
+            if st.session_state.username in ulist:
+                uIdx = ulist.index(st.session_state.username)
+                if uIdx < len(rlist):
+                    rlist.pop(uIdx)
+                ulist.remove(st.session_state.username)
+            dfPoll.at[idx, "usernames"] = json.dumps(ulist)
+            dfPoll.at[idx, "replies"] = json.dumps(rlist)
+        save_polls_df(dfPoll)
+
+        st.session_state.logged_in = False
+        st.rerun()
+
+# -------------------------
+# Home + Nav
+# -------------------------
+def show_home():
     st.title("Home")
-    st.write("Welcome to the home page.")
-    st.write("Created by: Sid Patel, George Forgey, Daniel Nakhooda, Gio Limena, Benji Alwis, Gio Jean")
-
+    st.write("Created by: The Prism Team")
+    st.write("Welcome to the Prism: Problem Reporting & Feedback App!")
     df = load_rankings()
 
     dfProblems = load_problems()
@@ -435,119 +626,9 @@ def home():
     df = df.sort_values(by="Number of Reports", ascending=False)
 
     st.header("Frequent Complaints:")
-    
+
     st.table(df.reset_index(drop=True))
-
-    st.header("Top Solutions:")
-    st.write("Solution 1")
-    st.write("Solution 2")
-    st.write("etc")
-
-def polls():
-    st.title("Polls")
-    st.write("Welcome to the polls page.")
-
-# -------------------------
-# Polls Page (for non-admin users)
-# -------------------------
-def polls_page():
-    st.header("Current Polls")
-    df = load_polls()
-    if df.empty:
-        st.info("No polls available at the moment.")
-        return
-    for idx, row in df.iterrows():
-        st.subheader(f"Poll {int(row['poll_id'])}: {row['question']}")
-        try:
-            replies = json.loads(row['replies'])
-        except:
-            replies = []
-        if replies:
-            st.write("Replies:")
-            for r in replies:
-                st.write(f"- {r}")
-        else:
-            st.write("No replies yet.")
-        reply = st.text_input(f"Your reply for poll {int(row['poll_id'])}", key=f"reply_{int(row['poll_id'])}")
-        if st.button(f"Submit Reply for poll {int(row['poll_id'])}", key=f"submit_reply_{int(row['poll_id'])}"):
-            if reply:
-                if (profanity.contains_profanity(reply)):
-                    st.info("Your reply cannot contain profanity!")
-                else:
-                    add_poll_reply(int(row['poll_id']), reply)
-                    st.success("Reply submitted!")
-                    st.rerun()
-            else:
-                st.error("Please enter a reply.")
-
-def add_poll_reply(poll_id, reply):
-    """Add a reply to a specific poll by poll_id."""
-    df = load_polls()
-    poll_row = df.loc[df["poll_id"] == poll_id]
-    if poll_row.empty:
-        return False
-    index = poll_row.index[0]
-    replies_str = df.at[index, "replies"]
-    try:
-        replies = json.loads(df.at[index, "replies"]) if df.at[index, "replies"] else []
-        usernames = json.loads(df.at[index, "usernames"]) if df.at[index, "usernames"] else []
-    except:
-        replies, usernames = [], []
-    if st.session_state.username in usernames:
-        user_index = usernames.index(st.session_state.username)
-        replies[user_index] = reply
-        df.at[index, "replies"] = json.dumps(replies)
-        df.to_csv(POLLS_CSV, index=False)
-        user_index = usernames.index(st.session_state.username)
-        replies[user_index] = reply
-        df.at[index, "replies"] = json.dumps(replies)
-        df.to_csv(POLLS_CSV, index=False)
-        return False
-    replies.append(reply)
-    usernames.append(st.session_state.username)
-    df.at[index, "replies"] = json.dumps(replies)
-    df.at[index, "usernames"] = json.dumps(usernames)
-    df.to_csv(POLLS_CSV, index=False)
-    return True
-
-# Initialize KeyBERT with our model
-kw_model = KeyBERT('sentence-transformers/all-MiniLM-L6-v2')
-
-# Extract keywords and return only the keyword list
-def get_keywords(text):
-    # Extract keywords; this returns a list of tuples like [(keyword, score), ...]
-    keyword_tuples = kw_model.extract_keywords(text, keyphrase_ngram_range=(1, 2), stop_words='english', top_n=5)
-    # Extract just the keyword strings
-    keywords = [keyword for keyword, score in keyword_tuples]
-    return keywords
-
-def load_users():
-    """Load users from CSV; if not exists, create an empty DataFrame."""
-    if os.path.exists(USERS_CSV):
-        return pd.read_csv(USERS_CSV)
-    else:
-        # Create a new CSV file with the appropriate columns
-        df = pd.DataFrame(columns=["username", "password", "admin"])
-        df.to_csv(USERS_CSV, index=False)
-        return df
     
-def load_polls():
-    """Load polls from CSV; if not exists, create an empty DataFrame."""
-    if os.path.exists(POLLS_CSV):
-        return pd.read_csv(POLLS_CSV)
-    else:
-        df = pd.DataFrame(columns=["poll_id", "question", "replies", "usernames"])
-        df.to_csv(POLLS_CSV, index=False)
-        return df
-
-def load_problems():
-    if os.path.exists(PROBLEMS_CSV):
-        return pd.read_csv(PROBLEMS_CSV)
-    else:
-        df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "embedding"])
-        df.to_csv(PROBLEMS_CSV, index=False)
-        return df
-
 def load_rankings():
     if os.path.exists(RANKINGS_CSV):
         return pd.read_csv(RANKINGS_CSV)
@@ -555,122 +636,84 @@ def load_rankings():
         df = pd.DataFrame(columns=["Name", "Category", "NumberOfReports"])
         df.to_csv(RANKINGS_CSV, index=False)
         return df
-
+      
 def count_users():
     df = load_users()
     return len(df)
-
 # -------------------------
-# Home / Landing Page Function
+# Main App
 # -------------------------
-def problems():
-    st.title("Problems:")
-    st.write("Welcome! Submit your problem or view aggregated feedback.")
-    
+def main():
+    st.set_page_config(page_title="Prism App", layout="wide")
 
-# 2. Problem Submission
-def submit_problem():
-    df = load_problems()
-
-    df = load_problems()
-    st.header("Submit Your Problem")
-    problem_text = st.text_area("Describe your problem:", height=150)
-    if st.button("Submit"):
-        if (profanity.contains_profanity(problem_text)):
-            st.info("Your message cannot contain profanity!")
-        else:
-            # Use categorization from categorize.py
-            assigned_category, sim_scores = assign_category(problem_text, cat_model, category_centroids)
-            st.write(f"Assigned Category: **{assigned_category}**")
-            
-            # Compute sentiment score using sentiment.py
-            sentiment_label, sentiment_score = analyze_sentiment(problem_text)
-            sentiment = f"{sentiment_label} ({sentiment_score:.2f})"
-
-            # Extract keywords using keyword.py
-            keywords = get_keywords(problem_text)
-            
-            # Create the problem entry without the embedding field
-            problem_entry = {
-                "problem_id": df["problem_id"].max() + 1,
-                "username": st.session_state.username,
-                "problem": problem_text,
-                "sentiment": sentiment,
-                "keywords": keywords,
-                "category": assigned_category
-            }
-
-            st.session_state.problems.append(problem_entry)
-            st.success("Problem submitted successfully!")
-    
-            new_entry = pd.DataFrame([problem_entry])
-            df = pd.concat([df, new_entry], ignore_index=True)
-            df.to_csv(PROBLEMS_CSV, index=False)
-
-    user_problems = df[df["username"] == st.session_state.username]
-
-    st.header("Your Submitted Problems")
-
-    for _, row in user_problems.iterrows():
-        with st.expander(f"Problem: **{row['problem']}**"):
-            if st.button(f"Delete Problem", key=row["problem_id"]):
-                df = df[df["problem_id"] != row['problem_id']]  # Remove problem by ID
-                df.to_csv(PROBLEMS_CSV, index=False)
-                st.success("Problem deleted successfully!")
-                st.rerun()
-
-def load_problems():
-    if os.path.exists(PROBLEMS_CSV):
-        return pd.read_csv(PROBLEMS_CSV)
-    else:
-        # Removed "embedding" field
-        df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "category"])
-        df.to_csv(PROBLEMS_CSV, index=False)
-        return df
-
-def analyze_sentiment(text):
-    sentiment_pipeline = pipeline("sentiment-analysis")
-    sen_value = sentiment_pipeline(text)
-    # Return both the label and the score
-    return sen_value[0]["label"], sen_value[0]["score"]
-
-def settings():
-    st.title("Settings")
-    st.write("Welcome to the settings page.")
-
-def account_settings_page():
-    st.header("Account Settings")
-    
-    if st.button("Delete Account"):
-        dfUsers = load_users()
-        dfUsers = dfUsers[dfUsers["username"] != st.session_state.username]
-        dfUsers.to_csv(USERS_CSV, index=False)
-
-        df_problems = load_problems()
-        df_problems = df_problems[df_problems["username"] != st.session_state.username]
-        df_problems.to_csv(PROBLEMS_CSV, index=False)
-
-        df = load_polls()
-    
-        for index, row in df.iterrows():
-            usernames = json.loads(row["usernames"]) if row["usernames"] else []
-            replies = json.loads(row["replies"]) if row["replies"] else []
-        
-            if st.session_state.username in usernames:
-                user_index = usernames.index(st.session_state.username)
-            
-                # Remove the username and corresponding reply
-                usernames.pop(user_index)
-                replies.pop(user_index)
-            
-                # Update the dataframe
-                df.at[index, "usernames"] = json.dumps(usernames)
-                df.at[index, "replies"] = json.dumps(replies)
-    
-        df.to_csv(POLLS_CSV, index=False)
-
+    if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
-        st.rerun()
+    if "admin" not in st.session_state:
+        st.session_state.admin = False
+    if "page" not in st.session_state:
+        st.session_state.page = "Home"
 
-if __name__ == '__main__':
+    if not st.session_state.logged_in:
+        st.sidebar.title("User Statistics")
+        st.sidebar.write(f"👥 Total Users: {count_users()}")
+        st.sidebar.write(f"🟢 Active Users: {1}")
+        st.sidebar.title("Authentication")
+        auth_mode = st.sidebar.radio("Select Mode", ("Login", "Sign Up"))
+        if auth_mode == "Login":
+            login_page()
+        else:
+            signup_page()
+        st.title("Welcome to Prism")
+        st.info("Prism, the online Problem Identifier and Solver used to help resolve issues within your community. After logging in, you will be able to submit your own problems around the community that will be analysed and sent to your local officials to be resolved around the community.")
+        st.image("prism-logo.png", use_container_width=True)
+    else:
+        st.sidebar.write(f"Logged in as: **{st.session_state.username}**")
+        if st.sidebar.button("Home"):
+            st.session_state.page = "Home"
+        if st.sidebar.button("Submit a Problem"):
+            st.session_state.page = "Submit a Problem"
+        if st.sidebar.button("View Problems"):
+            st.session_state.page = "View Problems"
+        if st.sidebar.button("Polls"):
+            st.session_state.page = "Polls"
+        if st.sidebar.button("FAQ"):
+            st.session_state.page = "FAQ"
+        if st.sidebar.button("About Us"):
+            st.session_state.page = "About Us"
+        st.sidebar.markdown("---")
+        if st.sidebar.button("Settings"):
+            st.session_state.page = "Settings"
+        if st.session_state.admin:
+            if st.sidebar.button("Admin Dashboard"):
+                st.session_state.page = "Admin Dashboard"
+
+        if st.sidebar.button("Logout"):
+            st.session_state.logged_in = False
+            st.rerun()
+
+        # Router:
+        if st.session_state.page == "Home":
+            show_home()
+        elif st.session_state.page == "Submit a Problem":
+            submit_problem()
+        elif st.session_state.page == "View Problems":
+            display_problems()   # <--- The new "Analytics" replaced with "View Problems"
+        elif st.session_state.page == "Polls":
+            polls_page()
+        elif st.session_state.page == "FAQ":
+            faq()
+        elif st.session_state.page == "About Us":
+            about()
+        elif st.session_state.page == "Settings":
+            settings()
+            account_settings_page()
+        elif st.session_state.page == "Admin Dashboard":
+            if st.session_state.admin:
+                admin_dashboard()
+            else:
+                st.error("Unauthorized access!")
+        else:
+            show_home()
+
+if __name__ == "__main__":
     main()

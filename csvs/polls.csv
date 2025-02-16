@@ -1,2 +1,12 @@
-poll_id,question,replies,usernames
-1,Dairy Queen or Wendys,"[""Queen""]","[""example admin""]"
+poll_id,question,replies,usernames,all_replies,current_replies,poll_version
+1,"To improve citizen satisfaction and address the problem of arriving late to work due to train delays, consider the following suggestions based on the provided poll text:
+
+1. Encourage the use of eco-friendly transportation alternatives: Promote the use of biking, walking, or public transportation options that have a lower environmental impact than driving. This can help address the citizen's concern about the environmental impact of trains while also providing a reliable transportation option.
+
+2. Implement flexible work hours: Encourage employers to offer flexible work hours to accommodate for potential train delays. This can help reduce the stress and consequences of being late to work due to train delays.
+
+3. Provide real-time train tracking: Implement a real-time train tracking system to help commuters plan their journey more accurately and make any necessary adjustments to their schedule. This can help reduce the likelihood of missing the train or being late to work due to unexpected delays or changes in the train schedule.
+
+4. Increase train frequency: Consider adding more trains to the system during peak hours to reduce overcrowding and delays. This can help ensure that commuters arrive at their destination on time, even during peak travel times.
+
+5. Improve train reliability: Invest in infrastructure improvements and maintenance to ensure that trains run on time and are reliable. This can help increase citizen satisfaction and reduce the stress and consequences of being late to work due to train delays.","[{""reply"": ""I dont like this poll because trains arnt good for the environemnt"", ""sentiment"": ""NEGATIVE (0.96)"", ""keywords"": [""poll trains"", ""trains arnt"", ""trains"", ""like poll"", ""poll""], ""version"": 1}, {""reply"": ""hi"", ""sentiment"": ""POSITIVE (1.00)"", ""keywords"": [""hi""], ""version"": 2}]","[""example admin"", ""daniel""]",,,2
