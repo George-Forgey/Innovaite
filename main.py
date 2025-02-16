@@ -10,6 +10,7 @@ from home import home
 from problems import problems
 from problems import load_problems
 from problems import submit_problem
+from polls import polls_page
 from settings import settings
 from load import load_users
 from load import load_polls
@@ -77,8 +78,6 @@ def signup_page():
 # -------------------------
 POLLS_CSV = "./csvs/polls.csv"
 
-
-
 def save_poll(question):
     """Save a new poll with a unique poll_id and empty replies list."""
     df = load_polls()
@@ -92,35 +91,7 @@ def save_poll(question):
     df.to_csv(POLLS_CSV, index=False)
     return new_id
 
-def add_poll_reply(poll_id, reply):
-    """Add a reply to a specific poll by poll_id."""
-    df = load_polls()
-    poll_row = df.loc[df["poll_id"] == poll_id]
-    if poll_row.empty:
-        return False
-    index = poll_row.index[0]
-    replies_str = df.at[index, "replies"]
-    try:
-        replies = json.loads(df.at[index, "replies"]) if df.at[index, "replies"] else []
-        usernames = json.loads(df.at[index, "usernames"]) if df.at[index, "usernames"] else []
-    except:
-        replies, usernames = [], []
-    if st.session_state.username in usernames:
-        user_index = usernames.index(st.session_state.username)
-        replies[user_index] = reply
-        df.at[index, "replies"] = json.dumps(replies)
-        df.to_csv(POLLS_CSV, index=False)
-        user_index = usernames.index(st.session_state.username)
-        replies[user_index] = reply
-        df.at[index, "replies"] = json.dumps(replies)
-        df.to_csv(POLLS_CSV, index=False)
-        return False
-    replies.append(reply)
-    usernames.append(st.session_state.username)
-    df.at[index, "replies"] = json.dumps(replies)
-    df.at[index, "usernames"] = json.dumps(usernames)
-    df.to_csv(POLLS_CSV, index=False)
-    return True
+
 
 # -------------------------
 # Problem Storage and Processing Functions
@@ -166,7 +137,6 @@ def display_problems():
         for problem in cluster['problems']:
           if st.button(f"View Problem {problem['problem_id']}", key=problem['problem_id']):
               show_problem_detail(problem)
-
 
 # -------------------------
 # Detailed Problem View
@@ -216,39 +186,6 @@ def admin_dashboard():
                     st.write(f"- {r}")
             else:
                 st.write("No replies yet.")
-
-# -------------------------
-# Polls Page (for non-admin users)
-# -------------------------
-def polls_page():
-    st.header("Current Polls")
-    df = load_polls()
-    if df.empty:
-        st.info("No polls available at the moment.")
-        return
-    for idx, row in df.iterrows():
-        st.subheader(f"Poll {int(row['poll_id'])}: {row['question']}")
-        try:
-            replies = json.loads(row['replies'])
-        except:
-            replies = []
-        if replies:
-            st.write("Replies:")
-            for r in replies:
-                st.write(f"- {r}")
-        else:
-            st.write("No replies yet.")
-        reply = st.text_input(f"Your reply for poll {int(row['poll_id'])}", key=f"reply_{int(row['poll_id'])}")
-        if st.button(f"Submit Reply for poll {int(row['poll_id'])}", key=f"submit_reply_{int(row['poll_id'])}"):
-            if reply:
-                if (profanity.contains_profanity(reply)):
-                    st.info("Your reply cannot contain profanity!")
-                else:
-                    add_poll_reply(int(row['poll_id']), reply)
-                    st.success("Reply submitted!")
-                    st.rerun()
-            else:
-                st.error("Please enter a reply.")
 
 # -------------------------
 # Main App Execution
@@ -314,6 +251,7 @@ def main():
                 st.error("Unauthorized access!")
         elif st.session_state.page == "Polls":
             polls()
+            polls_page()
         elif st.session_state.page == "Analytics":
             analytics()
 
