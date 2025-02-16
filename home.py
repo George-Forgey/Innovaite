@@ -7,4 +7,5 @@ def home():
 
     df = load_rankings()
 
-    st.table(df)
+    st.header("Frequent Complaints:")
+    st.dataframe(df, use_container_width=True)

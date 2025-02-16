@@ -29,6 +29,6 @@ def load_rankings():
     if os.path.exists(RANKINGS_CSV):
         return pd.read_csv(RANKINGS_CSV)
     else:
-        df = pd.DataFrame(columns=["rank", "name"])
+        df = pd.DataFrame(columns=["Name", "Category", "NumberOfReports"])
         df.to_csv(RANKINGS_CSV, index=False)
         return df
