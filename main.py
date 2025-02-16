@@ -409,6 +409,8 @@ def main():
                 admin_dashboard()
             else:
                 st.error("Unauthorized access!")
+        elif option == "Account Settings":
+            account_settings_page()
         if st.session_state.page == "Home":
             home()
         elif st.session_state.page == "Submit a Problem":
