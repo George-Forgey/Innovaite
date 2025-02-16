@@ -37,11 +37,14 @@ def save_user(username, password, admin):
 
 def validate_login(username, password):
     """Check whether the provided username and password match a record."""
-    df = load_users()
-    user_record = df[(df["username"] == username) & (df["password"] == password)]
-    st.session_state.admin = user_record.iloc[0]["admin"]
-    #st.session_state.admin = bool(user_record.iloc[0]["admin"])
-    return not user_record.empty
+    try:
+        df = load_users()
+        user_record = df[(df["username"] == username) & (df["password"] == password)]
+        st.session_state.admin = user_record.iloc[0]["admin"]
+        #st.session_state.admin = bool(user_record.iloc[0]["admin"])
+        return not user_record.empty
+    except:
+        return False
 
 # -------------------------
 # Authentication Pages
