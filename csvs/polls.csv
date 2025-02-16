@@ -1,3 +1,162 @@
+<<<<<<< Updated upstream
 poll_id,question,replies,usernames
 1,starbucks or dunkin?,"[""jwfoiao"", ""cats"", ""starbucks"", ""dunkin""]","[""daniel"", ""daniel2"", ""ed"", ""dickinson""]"
 2,starbucks or dunkin?,"[""trap"", ""dunkin""]","[""daniel"", ""dickinson""]"
+=======
+poll_id,question,replies,usernames,all_replies,current_replies,poll_version
+1,Example poll (respond with your thoughts),"[{""reply"": ""nooo"", ""sentiment"": ""NEGATIVE (0.98)"", ""keywords"": [""nooo""]}, {""reply"": ""i dont care"", ""sentiment"": ""NEGATIVE (1.00)"", ""keywords"": [""dont care"", ""care"", ""dont""]}]","[""qwe"", ""abcd""]",,,1
+2,"To minimize opposition and maximize acceptance, consider the following solution:
+
+Fix bus transportation by finding a solution that is balanced and addresses the needs and concerns of all stakeholders, while also respecting the desire to not add additional busses to the schedule at any time during the day. This could include implementing cost-effective measures to reduce costs and increase efficiency, such as optimizing the current bus schedule to ensure that there are enough seats for all passengers during peak hours. Additionally, consider involving passengers and stakeholders in the solution-making process and implementing measures to improve the bus riding experience, such as providing free wifi or comfortable seating. By finding a solution that is balanced and addresses the needs and concerns of all stakeholders, while also respecting the desire to not add additional busses to the schedule, it may be possible to minimize opposition and increase the chances of success.
+
+To minimize rejection and dissatisfaction, consider the following solution:
+
+Fix bus transportation by finding a solution that addresses the concerns and needs of all stakeholders, while also respecting the desire to not add additional busses to the schedule at any time during the day. This could include implementing cost-effective measures to reduce costs and increase efficiency, such as optimizing the current bus schedule to ensure that there are enough seats for all passengers during peak hours. Additionally, consider involving passengers and stakeholders in the solution-making process and gathering feedback to understand their needs and concerns. By addressing the concerns and needs of all stakeholders and involving them in the solution-making process, it may be possible to minimize rejection and dissatisfaction and increase the chances of success.
+
+To maximize satisfaction and trust, consider the following solution:
+
+Fix bus transportation by finding a solution that addresses the needs and concerns of all stakeholders, while also respecting the desire to not add additional busses to the schedule at any time during the day. This could include implementing cost-effective measures to reduce costs and increase efficiency, such as optimizing the current bus schedule to ensure that there are enough seats for all passengers during peak hours. Additionally, consider implementing measures to improve the bus riding experience, such as providing free wifi or comfortable seating, and gathering feedback from passengers to understand their needs and concerns. By finding a solution that addresses the needs and concerns of all stakeholders and implementing measures to improve the bus riding experience, it may be possible to maximize satisfaction and trust and increase the chances of success.
+
+To minimize distrust, consider the following solution:
+
+Fix bus transportation by finding a solution that is transparent and accountable, while also respecting the desire to not add additional busses to the schedule at any time during the day. This could include providing regular updates on the progress of the solution and involving passengers and stakeholders in the solution-making process. Additionally, consider implementing measures to improve the bus riding experience and gather feedback from passengers to understand their needs and concerns. By being transparent and accountable and implementing measures to improve the bus riding experience, it may be possible to minimize distrust and increase the chances of success.","[{""reply"": ""I love this solution because it will help me get to work on time"", ""sentiment"": ""POSITIVE (1.00)"", ""keywords"": [""work time"", ""help work"", ""solution help"", ""solution"", ""love solution""], ""version"": 1}, {""reply"": ""I dont like this because it costs too much and is unecessary"", ""sentiment"": ""NEGATIVE (1.00)"", ""keywords"": [""costs unecessary"", ""like costs"", ""costs"", ""unecessary"", ""dont like""], ""version"": 1}]","[""qwe"", ""abcd""]","[{""reply"": ""wsda"", ""sentiment"": ""NEGATIVE (0.92)"", ""keywords"": [""wsda""]}]","[{""reply"": ""wsda"", ""sentiment"": ""NEGATIVE (0.92)"", ""keywords"": [""wsda""]}]",3
+3,"<context>
+(ProblemID 1) I dont feel safe walking home at night
+</context>
+<question>
+no additional instructions
+
+Existing solution:
+<answer>
+To increase your feeling of safety while walking home at night, consider the following options:
+
+1. Stay in well-lit areas: Stick to streets with streetlights or buildings with exterior lights on. Avoid dark alleys or poorly lit paths.
+
+2. Walk with a group: If possible, walk with friends or family members. There is safety in numbers.
+
+3. Stay aware of your surroundings: Keep your head up and avoid distractions like wearing headphones or looking at your phone. Be alert for any potential dangers.
+
+4. Trust your instincts: If something doesn't feel right, trust your gut and remove yourself from the situation.
+
+5. Plan your route: Choose a route that is well-traveled and has plenty of people around. Avoid deserted areas or shortcuts through isolated areas.
+
+6. Let someone know your plans: Tell a friend or family member where you are going and when you expect to arrive.
+
+7. Carry a personal safety device: Consider carrying pepper spray, a personal alarm or a safety app on your phone.
+
+8. Consider alternative transportation: If you don't feel safe walking, consider taking a taxi, ride-share, or public transportation.
+
+9. Advocate for better street lighting: Contact your local government or neighborhood association to request improved street lighting in areas where you don't feel safe.
+</answer>
+</question>",[],[],,,1
+4,"<answer>
+To address the concern of feeling unsafe walking home at night, the police force could implement a few strategies. Firstly, increasing police patrols in the areas where people feel unsafe, especially during nighttime hours, could provide a visible presence that deters potential criminals and makes community members feel safer. Secondly, the police force could establish a neighborhood watch program that encourages community members to work together to keep their neighborhood safe. This could include training community members on how to identify and report suspicious activity. Thirdly, the police force could improve lighting in dark areas, such as alleys and parks, to increase visibility and deter criminal activity. Finally, the police force could work with local businesses to install security cameras in high-traffic areas, which could help identify and prosecute offenders.
+</answer>
+<context>
+(ProblemID 2) I am worried about the quality of education my child is receiving
+</context>
+<question>
+How could we improve the education system to fix this
+</question>
+<answer>
+To improve the quality of education that children receive, several strategies could be implemented. Firstly, increasing funding for schools could allow for the hiring of more qualified teachers, the purchase of up-to-date textbooks and technology, and the implementation of evidence-based teaching practices. Secondly, providing ongoing professional development opportunities for teachers could help them stay current on best practices and improve their teaching skills. Thirdly, implementing a rigorous curriculum that is aligned with state and national standards could ensure that all students receive a high-quality education that prepares them for college and careers. Fourthly, providing additional support services, such as counseling and tutoring, could help students who are struggling academically or socially. Finally, involving parents and community members in the education process could help to create a culture of learning and support.
+</answer>
+<context>
+(ProblemID 3) I am concerned about the level of crime in my community
+</context>
+<question>
+How could we reduce crime to fix this
+</question>
+<answer>
+To reduce crime in a community, several strategies could be implemented. Firstly, increasing the number of police officers and improving police visibility could deter criminal activity and make community members feel safer. Secondly, addressing the root causes of crime, such as poverty, unemployment, and lack of education, could help to reduce the number of people who turn to crime out of necessity. Thirdly, implementing evidence-based crime prevention programs, such as drug treatment programs and job training programs, could help to reduce recidivism rates and prevent people from turning to crime in the first place. Fourthly, improving community-police relations could help to build trust and encourage community members to report suspicious activity. Finally, increasing funding for crime prevention programs and initiatives could help to ensure that these strategies are implemented effectively and sustainably.
+</answer>
+<context>
+(ProblemID 4) I am worried about the environment and climate change
+</context>
+<question>
+How could we address environmental concerns and climate change to fix this
+</question>
+<answer>
+To address environmental concerns and climate change, several strategies could be implemented. Firstly, reducing greenhouse gas emissions through the use of renewable energy sources, such as wind and solar power, could help to mitigate the impacts of climate change. Secondly, implementing policies that encourage energy efficiency, such as building codes that require energy-efficient appliances and lighting, could help to reduce energy consumption and greenhouse gas emissions. Thirdly, protecting natural habitats and biodiversity could help to preserve ecosystems and mitigate the impacts of climate change. Fourthly, promoting sustainable transportation options, such as public transit, biking, and walking, could help to reduce carbon emissions from transportation. Finally, educating the public about environmental issues and encouraging them to take action could help to build a culture of sustainability and environmental stewardship.
+</answer>
+<context>
+(ProblemID 5) I am concerned about the rising cost of healthcare
+</context>
+<question>
+How could we make healthcare more affordable to fix this
+</question>
+<answer>
+To make healthcare more affordable, several strategies could be implemented. Firstly, expanding Medicaid and providing subsidies for low-income individuals could help to make healthcare more accessible and affordable. Secondly, promoting price transparency and competition in the healthcare industry could help to drive down costs and improve quality. Thirdly, implementing policies that encourage preventative care, such as wellness programs and screenings, could help to reduce the need for more expensive treatments down the line. Fourthly, investing in telemedicine and other digital health technologies could help to make healthcare more convenient",[],[],,,1
+5,"<answer>
+You can manage police to fix this issue by requesting for increased police patrols in your neighborhood, especially during the night hours. You can also advocate for the implementation of a neighborhood watch program, where community members take turns monitoring the area and reporting any suspicious activities to the police. Additionally, you can work with local authorities to improve street lighting and ensure that public spaces are well-lit, making it harder for potential criminals to hide.
+</answer>
+<context>
+(ProblemID 2) I am struggling to pay my bills
+</question>
+<answer>
+To manage this issue, you can start by creating a budget to track your income and expenses. This will help you identify areas where you can cut back on spending. Consider finding ways to increase your income, such as taking on a part-time job or freelancing. You can also explore options for reducing your bills, such as negotiating with your service providers or switching to cheaper plans. If you are still struggling, consider seeking assistance from local community organizations or government programs that offer financial assistance or counseling.
+</answer>
+<context>
+(ProblemID 3) My child is being bullied at school
+</question>
+<answer>
+To manage this issue, it's important to talk to your child and gather as much information as possible about the bullying. Encourage your child to report any incidents to a trusted adult at school, such as a teacher or counselor. You can also work with school administrators to develop a plan to address the bullying, which may include increased supervision, counseling for the bully, and consequences for their behavior. Additionally, consider enrolling your child in a support group or counseling to help them cope with the emotional impact of bullying.
+</answer>
+<context>
+(ProblemID 4) I am having trouble finding a job
+</question>
+<answer>
+To manage this issue, start by updating your resume and cover letter to ensure they are tailored to the jobs you are applying for. Consider seeking assistance from a career counselor or employment agency to help you identify job opportunities and prepare for interviews. You can also expand your job search by looking for opportunities in different industries or locations. Networking is also an important part of job searching, so consider attending job fairs, industry events, and reaching out to your professional network for leads. Finally, be persistent and don't get discouraged if you don't hear back right away. Keep applying and improving your skills to increase your chances of finding a job.
+</answer>
+<context>
+(ProblemID 5) I am feeling lonely and isolated
+</question>
+<answer>
+To manage this issue, consider reaching out to friends, family, or a mental health professional for support. Joining a community group or club that aligns with your interests can also help you meet new people and build connections. Volunteering is another great way to get involved in your community and meet like-minded individuals. If you're feeling uncomfortable attending in-person events, consider joining online communities or forums related to your interests. Finally, practicing self-care and engaging in activities that bring you joy can help improve your mood and reduce feelings of loneliness.
+</answer>
+<context>
+(ProblemID 6) My neighborhood is not clean
+</question>
+<answer>
+To manage this issue, consider organizing a neighborhood clean-up event to encourage community members to come together and clean up the area. You can also work with local authorities to ensure that trash cans are emptied regularly and that any litter is promptly removed. Advocating for stricter penalties for littering can also help deter people from leaving trash in public spaces. Additionally, consider working with local businesses and organizations to sponsor clean-up events or provide resources to help keep the neighborhood clean.
+</answer>
+<context>
+(ProblemID 7) I am experiencing discrimination
+</question>
+<answer>
+To manage this issue, it's important to document any incidents of discrimination and report them to the appropriate authorities, such as a supervisor, human resources, or a legal agency. Consider seeking support from advocacy organizations or community groups that focus on addressing discrimination and promoting equality. If the discrimination is happening at work, you may want to consider speaking with a lawyer or filing a complaint with the Equal Employment Opportunity Commission (EEOC). Additionally, consider seeking support from a mental health professional to help you cope with the emotional impact of discrimination.
+</answer>
+<context>
+(ProblemID 8) I am having trouble with my landlord
+</question>
+<answer>
+To manage this issue, start by",[],[],,,1
+6,"To address the concern of feeling unsafe while walking home at night, several changes can be made to the police force. Firstly, increasing the number of police officers on patrol, especially during late-night hours, can provide a stronger visible presence and deter potential criminal activity. Implementing community policing strategies, where officers engage with residents, can also build trust and encourage reporting of suspicious activities. Additionally, investing in technology such as streetlights, security cameras, and emergency call boxes can enhance safety and improve response times. Providing self-defense classes and personal safety education to the community can also empower individuals to protect themselves. Lastly, addressing the root causes of crime, such as poverty and unemployment, through community development programs can reduce crime rates in the long term.
+
+
+(ProblemID 2) I am worried about the safety of my children in school
+
+
+how do we change school security to fix this
+
+
+To address concerns about the safety of children in school, several security measures can be implemented. Firstly, installing security cameras and metal detectors at school entrances can help monitor and control access to the school. Hiring trained security personnel to monitor the school premises can also provide an added layer of protection. Implementing a visitor management system that requires all visitors to provide identification and be escorted can prevent unauthorized access. Providing regular active shooter drills and emergency preparedness training to staff and students can ensure everyone knows what to do in case of an emergency. Additionally, creating a positive school climate that fosters a sense of community and belonging can reduce the likelihood of bullying and violence. Lastly, addressing the root causes of school violence, such as mental health issues and social pressures, through counseling and support programs can help prevent incidents from occurring in the first place.
+
+
+(ProblemID 3) I am concerned about the rise in cybercrime
+
+
+how do we change cybersecurity to fix this
+
+
+To address the concern of the rise in cybercrime, several measures can be taken to improve cybersecurity. Firstly, implementing multi-factor authentication and strong password policies can prevent unauthorized access to accounts. Regularly updating software and using antivirus software can also protect against malware and other cyber threats. Providing cybersecurity training to employees can help them recognize and respond to phishing attempts and other social engineering tactics. Implementing network segmentation and access controls can limit the damage that a cyber attack can cause. Regularly conducting vulnerability assessments and penetration testing can identify and address weaknesses in the system. Lastly, establishing an incident response plan can ensure a swift and effective response to any cyber attacks that do occur.
+
+
+(ProblemID 4) I am worried about the impact of climate change on my community
+
+
+how do we change environmental policies to fix this
+
+
+To address concerns about the impact of climate change on the community, several environmental policies can be implemented. Firstly, reducing greenhouse gas emissions through renewable energy sources, such as wind and solar power, can help mitigate the effects of climate change. Implementing energy-efficient policies, such as building codes and appliance standards, can also reduce energy consumption and emissions. Promoting sustainable transportation options, such as public transit, biking, and walking, can reduce carbon emissions from vehicles. Protecting and restoring natural habitats, such as forests and wetlands, can help absorb carbon dioxide and provide other ecosystem services. Implementing policies that encourage sustainable agriculture and reduce food waste can also help reduce emissions from the agricultural sector. Lastly, promoting climate education and awareness can help individuals and communities make informed decisions about their impact on the environment.",[],[],,,1
+>>>>>>> Stashed changes
