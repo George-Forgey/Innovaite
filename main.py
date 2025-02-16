@@ -4,6 +4,8 @@ import os
 import json
 from sentiment import analyze_sentiment
 from better_profanity import profanity
+from sentiment import analyze_sentiment
+from better_profanity import profanity
 
 # -------------------------
 # Helper Functions for Auth
@@ -111,6 +113,10 @@ def add_poll_reply(poll_id, reply):
         replies[user_index] = reply
         df.at[index, "replies"] = json.dumps(replies)
         df.to_csv(POLLS_CSV, index=False)
+        user_index = usernames.index(st.session_state.username)
+        replies[user_index] = reply
+        df.at[index, "replies"] = json.dumps(replies)
+        df.to_csv(POLLS_CSV, index=False)
         return False
     replies.append(reply)
     usernames.append(st.session_state.username)
@@ -169,8 +175,23 @@ def load_problems():
         df.to_csv(PROBLEMS_CSV, index=False)
         return df
 
+# -------------------------
+# Problem Stuff
+# -------------------------
+PROBLEMS_CSV = "./csvs/problems.csv"
+
+def load_problems():
+    if os.path.exists(PROBLEMS_CSV):
+        return pd.read_csv(PROBLEMS_CSV)
+    else:
+        df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "embedding"])
+        df.to_csv(PROBLEMS_CSV, index=False)
+        return df
+
 # 2. Problem Submission
 def submit_problem():
+
+    df = load_problems()
 
     df = load_problems()
     st.header("Submit Your Problem")
@@ -273,9 +294,12 @@ def polls_page():
         reply = st.text_input(f"Your reply for poll {int(row['poll_id'])}", key=f"reply_{int(row['poll_id'])}")
         if st.button(f"Submit Reply for poll {int(row['poll_id'])}", key=f"submit_reply_{int(row['poll_id'])}"):
             if reply:
-                add_poll_reply(int(row['poll_id']), reply)
-                st.success("Reply submitted!")
-                st.rerun()
+                if (profanity.contains_profanity(reply)):
+                    st.info("Your reply cannot contain profanity!")
+                else:
+                    add_poll_reply(int(row['poll_id']), reply)
+                    st.success("Reply submitted!")
+                    st.rerun()
             else:
                 st.error("Please enter a reply.")
 
