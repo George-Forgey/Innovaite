@@ -1,7 +1,0 @@
-[theme]
-base = "light"                              # Light mode base
-primaryColor = "#FF6F61"                      # Vibrant coral for buttons and accents
-backgroundColor = "#F0E5D8"                   # Warm off-white background for the main area
-secondaryBackgroundColor = "#5dbd5a"          # warm green
-textColor = "black"                         # Deep teal/dark blue for text
-font = "sans serif"
