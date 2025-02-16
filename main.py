@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import json
+import ast
 from sentiment import analyze_sentiment
 from better_profanity import profanity
 from keywords import get_keywords
@@ -19,17 +20,17 @@ def load_users():
         return pd.read_csv(USERS_CSV)
     else:
         # Create a new CSV file with the appropriate columns
-        df = pd.DataFrame(columns=["username", "password"])
+        df = pd.DataFrame(columns=["username", "password", "admin"])
         df.to_csv(USERS_CSV, index=False)
         return df
 
-def save_user(username, password):
+def save_user(username, password, admin):
     """Append a new user to the CSV file."""
     df = load_users()
     # Check if username already exists
     if username in df['username'].values:
         return False
-    new_user = pd.DataFrame([[username, password]], columns=["username", "password"])
+    new_user = pd.DataFrame([[username, password, admin]], columns=["username", "password", "admin"])
     df = pd.concat([df, new_user], ignore_index=True)
     df.to_csv(USERS_CSV, index=False)
     return True
@@ -38,6 +39,8 @@ def validate_login(username, password):
     """Check whether the provided username and password match a record."""
     df = load_users()
     user_record = df[(df["username"] == username) & (df["password"] == password)]
+    st.session_state.admin = user_record.iloc[0]["admin"]
+    #st.session_state.admin = bool(user_record.iloc[0]["admin"])
     return not user_record.empty
 
 # -------------------------
@@ -64,7 +67,7 @@ def signup_page():
         if new_username == "" or new_password == "":
             st.sidebar.error("Please enter a username and password.")
         else:
-            success = save_user(new_username, new_password)
+            success = save_user(new_username, new_password, False)
             if success:
                 st.sidebar.success("Sign up successful! You can now log in.")
             else:
@@ -151,9 +154,9 @@ def show_home():
     st.write("Welcome! Submit your problem or view aggregated feedback.")
     # Display different options based on user role
     if st.session_state.username == "example admin":
-        options = ["Submit a Problem", "View Problems", "Admin Dashboard"]
+        options = ["Submit a Problem", "View Problems", "Admin Dashboard", "Account Settings"]
     else:
-        options = ["Submit a Problem", "View Problems", "Polls"]
+        options = ["Submit a Problem", "View Problems", "Polls", "Account Settings"]
     option = st.selectbox("Select an option:", options)
     return option
 
@@ -185,7 +188,6 @@ def load_problems():
 
 # 2. Problem Submission
 def submit_problem():
-
     df = load_problems()
 
     df = load_problems()
@@ -320,6 +322,31 @@ def polls_page():
             else:
                 st.error("Please enter a reply.")
 
+def account_settings_page():
+    st.header("Account Settings")
+    if st.button("Delete Account"):
+        dfUsers = load_users()
+        dfUsers = dfUsers[dfUsers["username"] != st.session_state.username]
+        dfUsers.to_csv(USERS_CSV, index=False)
+
+        df_problems = load_problems()
+        df_problems = df_problems[df_problems["username"] != st.session_state.username]
+        df_problems.to_csv(PROBLEMS_CSV, index=False)
+
+        df_polls = load_polls()
+        df_polls["usernames"] = df_polls["usernames"].apply(lambda x: ast.literal_eval(x))
+        df_polls["replies"] = df_polls["replies"].apply(lambda x: ast.literal_eval(x))
+        for index, row in df_polls.iterrows():
+            if st.session_state.username in row["usernames"]:
+                username_index = row["usernames"].index(st.session_state.username)
+                row["replies"].pop(username_index)
+                row["usernames"].remove(st.session_state.username)
+
+        df_polls.to_csv(POLLS_CSV, index=False)
+
+        st.session_state.logged_in = False
+        st.rerun()
+
 # -------------------------
 # Main App Execution
 # -------------------------
@@ -351,13 +378,14 @@ def main():
         elif option == "View Problems":
             display_problems()
         elif option == "Admin Dashboard":
-            # Only admin should see this option, but we double-check:
-            if st.session_state.username == "example admin":
+            if st.session_state.admin:
                 admin_dashboard()
             else:
                 st.error("Unauthorized access!")
         elif option == "Polls":
             polls_page()
+        elif option == "Account Settings":
+            account_settings_page()
 
 if __name__ == '__main__':
     main()
