@@ -10,6 +10,10 @@ from home import home
 from problems import problems
 from problems import load_problems
 from problems import submit_problem
+from settings import settings
+from load import load_users
+from load import load_polls
+from settings import account_settings_page
 from better_profanity import profanity
 from keywords import get_keywords
 from categorize import assign_category, model as cat_model, category_centroids
@@ -18,16 +22,6 @@ from categorize import assign_category, model as cat_model, category_centroids
 # Helper Functions for Auth
 # -------------------------
 USERS_CSV = "./csvs/users.csv"
-
-def load_users():
-    """Load users from CSV; if not exists, create an empty DataFrame."""
-    if os.path.exists(USERS_CSV):
-        return pd.read_csv(USERS_CSV)
-    else:
-        # Create a new CSV file with the appropriate columns
-        df = pd.DataFrame(columns=["username", "password", "admin"])
-        df.to_csv(USERS_CSV, index=False)
-        return df
 
 def save_user(username, password, admin):
     """Append a new user to the CSV file."""
@@ -83,14 +77,7 @@ def signup_page():
 # -------------------------
 POLLS_CSV = "./csvs/polls.csv"
 
-def load_polls():
-    """Load polls from CSV; if not exists, create an empty DataFrame."""
-    if os.path.exists(POLLS_CSV):
-        return pd.read_csv(POLLS_CSV)
-    else:
-        df = pd.DataFrame(columns=["poll_id", "question", "replies", "usernames"])
-        df.to_csv(POLLS_CSV, index=False)
-        return df
+
 
 def save_poll(question):
     """Save a new poll with a unique poll_id and empty replies list."""
@@ -263,39 +250,6 @@ def polls_page():
             else:
                 st.error("Please enter a reply.")
 
-def account_settings_page():
-    st.header("Account Settings")
-    if st.button("Delete Account"):
-        dfUsers = load_users()
-        dfUsers = dfUsers[dfUsers["username"] != st.session_state.username]
-        dfUsers.to_csv(USERS_CSV, index=False)
-
-        df_problems = load_problems()
-        df_problems = df_problems[df_problems["username"] != st.session_state.username]
-        df_problems.to_csv(PROBLEMS_CSV, index=False)
-
-        df = load_polls()
-    
-        for index, row in df.iterrows():
-            usernames = json.loads(row["usernames"]) if row["usernames"] else []
-            replies = json.loads(row["replies"]) if row["replies"] else []
-        
-            if st.session_state.username in usernames:
-                user_index = usernames.index(st.session_state.username)
-            
-                # Remove the username and corresponding reply
-                usernames.pop(user_index)
-                replies.pop(user_index)
-            
-                # Update the dataframe
-                df.at[index, "usernames"] = json.dumps(usernames)
-                df.at[index, "replies"] = json.dumps(replies)
-    
-        df.to_csv(POLLS_CSV, index=False)
-
-        st.session_state.logged_in = False
-        st.rerun()
-
 # -------------------------
 # Main App Execution
 # -------------------------
@@ -326,11 +280,13 @@ def main():
             st.session_state.page = "Submit a Problem"
         if st.sidebar.button("Polls"):
             st.session_state.page = "Polls"
+        if st.sidebar.button("Analytics"):
+            st.session_state.page = "Analytics"
+        if st.sidebar.button("Settings"):
+            st.session_state.page = "Settings"
         if st.session_state.get("username") == "example admin":
             if st.sidebar.button("Admin Dashboard"):
                 st.session_state.page = "Admin Dashboard"
-        if st.sidebar.button("Analytics"):
-            st.session_state.page = "Analytics"
 
         if st.sidebar.button("Logout"):
             st.session_state.logged_in = False
@@ -342,13 +298,15 @@ def main():
                      
         if "page" not in st.session_state:
             st.session_state.page = "Home" 
-        elif option == "Account Settings":
-            account_settings_page()
+
         if st.session_state.page == "Home":
             home()
         elif st.session_state.page == "Submit a Problem":
             problems()
             submit_problem()
+        elif st.session_state.page == "Settings":
+            settings()
+            account_settings_page()
         elif st.session_state.page == "Admin Dashboard":
             if st.session_state.get("username") == "example admin":
                 admin_dashboard()
