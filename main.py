@@ -154,8 +154,22 @@ def show_home():
     option = st.selectbox("Select an option:", options)
     return option
 
+# -------------------------
+# Problem Stuff
+# -------------------------
+PROBLEMS_CSV = "./csvs/problems.csv"
+
+def load_problems():
+    if os.path.exists(PROBLEMS_CSV):
+        return pd.read_csv(PROBLEMS_CSV)
+    else:
+        df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "embedding"])
+        df.to_csv(PROBLEMS_CSV, index=False)
+        return df
+
 # 2. Problem Submission
 def submit_problem():
+    df = load_problems()
     st.header("Submit Your Problem")
     problem_text = st.text_area("Describe your problem:", height=150)
     if st.button("Submit"):
@@ -163,14 +177,20 @@ def submit_problem():
         keywords = extract_keywords(problem_text)            # Replace with your function
         embedding = generate_embedding(problem_text)         # Replace with your function
         problem_entry = {
+            "problem_id": len(st.session_state.problems) + 1,
+            "username": st.session_state.username,
             "text": problem_text,
             "sentiment": sentiment,
             "keywords": keywords,
             "embedding": embedding,
-            "id": len(st.session_state.problems) + 1
         }
         st.session_state.problems.append(problem_entry)
         st.success("Problem submitted successfully!")
+    
+        new_entry = pd.DataFrame([problem_entry])
+        df = pd.concat([df, new_entry], ignore_index=True)
+        df.to_csv(PROBLEMS_CSV, index=False)
+      
 
 # 3. Display Aggregated Problems
 def display_problems():

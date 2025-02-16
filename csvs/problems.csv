@@ -1,0 +1,2 @@
+problem_id,username,text,sentiment,keywords,embedding
+1,daniel,I have a problem,Neutral,"['keyword1', 'keyword2']","[0.1, 0.2, 0.3]"
