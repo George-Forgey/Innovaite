@@ -11,7 +11,7 @@ PROBLEMS_CSV = "./csvs/problems.csv"
 # Home / Landing Page Function
 # -------------------------
 def problems():
-    st.title("Sumbit a Problem")
+    st.title("Submit a Problem")
     st.write("Welcome to the problems page.")
     st.header("Prism: Problem Reporting & Feedback App")
     st.write("Created by: Sid Patel, George Forgey, Daniel Nakhooda, Geo Limena")

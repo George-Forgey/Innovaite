@@ -23,3 +23,4 @@ def load_polls():
         df = pd.DataFrame(columns=["poll_id", "question", "replies", "usernames"])
         df.to_csv(POLLS_CSV, index=False)
         return df
+    
