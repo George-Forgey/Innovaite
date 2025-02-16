@@ -11,9 +11,9 @@ PROBLEMS_CSV = "./csvs/problems.csv"
 # Home / Landing Page Function
 # -------------------------
 def problems():
-    st.title("Submit a Problem")
-    st.write("Created by: Sid Patel, George Forgey, Daniel Nakhooda, Geo Limena")
+    st.title("Problems:")
     st.write("Welcome! Submit your problem or view aggregated feedback.")
+    
 
 # 2. Problem Submission
 def submit_problem():
@@ -39,7 +39,7 @@ def submit_problem():
             
             # Create the problem entry without the embedding field
             problem_entry = {
-                "problem_id": len(st.session_state.problems) + 1,
+                "problem_id": df["problem_id"].max() + 1,
                 "username": st.session_state.username,
                 "problem": problem_text,
                 "sentiment": sentiment,
@@ -50,9 +50,21 @@ def submit_problem():
             st.session_state.problems.append(problem_entry)
             st.success("Problem submitted successfully!")
     
-        new_entry = pd.DataFrame([problem_entry])
-        df = pd.concat([df, new_entry], ignore_index=True)
-        df.to_csv(PROBLEMS_CSV, index=False)
+            new_entry = pd.DataFrame([problem_entry])
+            df = pd.concat([df, new_entry], ignore_index=True)
+            df.to_csv(PROBLEMS_CSV, index=False)
+
+    user_problems = df[df["username"] == st.session_state.username]
+
+    st.header("Your Submitted Problems")
+
+    for _, row in user_problems.iterrows():
+        with st.expander(f"Problem: **{row['problem']}**"):
+            if st.button(f"Delete Problem This Problem", key=row["problem_id"]):
+                df = df[df["problem_id"] != row['problem_id']]  # Remove problem by ID
+                df.to_csv(PROBLEMS_CSV, index=False)
+                st.success("Problem deleted successfully!")
+                st.rerun()
 
 def load_problems():
     if os.path.exists(PROBLEMS_CSV):
