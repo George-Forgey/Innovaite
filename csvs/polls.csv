@@ -1,3 +1,3 @@
 poll_id,question,replies,usernames
-1,starbucks or dunkin?,"[""jwfoiao"", ""cats"", ""starbucks"", ""dunkin"", ""DUNKINNNNN""]","[""daniel"", ""daniel2"", ""ed"", ""dickinson"", ""qwe""]"
-2,starbucks or dunkin?,"[""trap"", ""dunkin""]","[""daniel"", ""dickinson""]"
+1,starbucks or dunkin?,"['cats', 'starbucks', 'dunkin', 'DUNKINNNNN']","['daniel2', 'ed', 'dickinson', 'qwe']"
+2,starbucks or dunkin?,['dunkin'],['dickinson']
