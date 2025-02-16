@@ -60,7 +60,7 @@ def submit_problem():
 
     for _, row in user_problems.iterrows():
         with st.expander(f"Problem: **{row['problem']}**"):
-            if st.button(f"Delete Problem This Problem", key=row["problem_id"]):
+            if st.button(f"Delete Problem", key=row["problem_id"]):
                 df = df[df["problem_id"] != row['problem_id']]  # Remove problem by ID
                 df.to_csv(PROBLEMS_CSV, index=False)
                 st.success("Problem deleted successfully!")

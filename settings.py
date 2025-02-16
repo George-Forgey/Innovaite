@@ -1,14 +1,15 @@
 import streamlit as st
 import json
 from problems import load_problems
-from load import load_users
-from load import load_polls
-
+from load import load_users, load_polls
 
 PROBLEMS_CSV = "./csvs/problems.csv"
 POLLS_CSV = "./csvs/polls.csv"
 USERS_CSV = "./csvs/users.csv"
 
+# Initialize session state for theme
+if "theme" not in st.session_state:
+    st.session_state.theme = "light"
 
 def settings():
     st.title("Settings")
@@ -16,6 +17,7 @@ def settings():
 
 def account_settings_page():
     st.header("Account Settings")
+    
     if st.button("Delete Account"):
         dfUsers = load_users()
         dfUsers = dfUsers[dfUsers["username"] != st.session_state.username]
@@ -46,3 +48,41 @@ def account_settings_page():
 
         st.session_state.logged_in = False
         st.rerun()
+
+    if st.button("Change Theme"):
+        st.session_state.theme = "dark" 
+        apply_theme()
+    else: 
+        st.session_state.theme == "light"
+        apply_theme()
+        #st.rerun()
+
+def apply_theme():
+    """Applies the selected theme dynamically."""
+    if st.session_state.theme == "dark":
+        st.markdown("""
+            <style>
+                body {
+                    background-color: #0e1117;
+                    color: white;
+                }
+                .stButton>button {
+                    background-color: #1f2937;
+                    color: white;
+                }
+            </style>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+            <style>
+                body {
+                    background-color: white;
+                    color: black;
+                }
+                .stButton>button {
+                    background-color: #e0e0e0;
+                    color: black;
+                }
+            </style>
+        """, unsafe_allow_html=True)
+
