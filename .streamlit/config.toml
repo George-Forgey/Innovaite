@@ -1,6 +1,6 @@
 [theme]
 base = "light"                              # Light mode base
-primaryColor = "#FF6F61"                      # Vibrant coral for buttons and accents
+primaryColor = "#000"                      # Vibrant coral for buttons and accents
 backgroundColor = "#F0E5D8"                   # Warm off-white background for the main area
 secondaryBackgroundColor = "#a6cef2"          # warm green
 textColor = "black"                         # Deep teal/dark blue for text
