@@ -145,7 +145,8 @@ if "problems" not in st.session_state:
 
 # 1. Home / Landing Page (with role-specific options)
 def show_home():
-    st.title("Problem Reporting & Feedback App")
+    st.header("Prism: Problem Reporting & Feedback App")
+    st.write("Created by: Sid Patel, George Forgey, Daniel Nakhooda, Geo Limena")
     st.write("Welcome! Submit your problem or view aggregated feedback.")
     # Display different options based on user role
     if st.session_state.username == "example admin":
