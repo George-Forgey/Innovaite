@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import json
 from sentiment import analyze_sentiment
+from better_profanity import profanity
 
 # -------------------------
 # Helper Functions for Auth
@@ -169,10 +170,15 @@ def load_problems():
 
 # 2. Problem Submission
 def submit_problem():
+
     df = load_problems()
     st.header("Submit Your Problem")
     problem_text = st.text_area("Describe your problem:", height=150)
     if st.button("Submit"):
+        if (profanity.contains_profanity(problem_text)):
+            st.info("Your message cannot contain profanity!")
+            return
+
         sentiment = analyze_sentiment(problem_text)          # Replace with your function
         keywords = extract_keywords(problem_text)            # Replace with your function
         embedding = generate_embedding(problem_text)         # Replace with your function
@@ -186,6 +192,8 @@ def submit_problem():
         }
         st.session_state.problems.append(problem_entry)
         st.success("Problem submitted successfully!")
+
+        
     
         new_entry = pd.DataFrame([problem_entry])
         df = pd.concat([df, new_entry], ignore_index=True)
