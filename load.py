@@ -32,3 +32,7 @@ def load_rankings():
         df = pd.DataFrame(columns=["Name", "Category", "NumberOfReports"])
         df.to_csv(RANKINGS_CSV, index=False)
         return df
+
+def count_users():
+    df = load_users()
+    return len(df)

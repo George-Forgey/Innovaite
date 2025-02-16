@@ -7,13 +7,10 @@ from sentiment import analyze_sentiment
 from analytics import analytics
 from polls import polls
 from home import home
-from problems import problems
-from problems import load_problems
-from problems import submit_problem
+from problems import problems, load_problems, submit_problem
 from polls import polls_page
 from settings import settings
-from load import load_users
-from load import load_polls
+from load import load_users, load_polls, count_users
 from settings import account_settings_page
 from better_profanity import profanity
 from keywords import get_keywords
@@ -202,12 +199,16 @@ def main():
         st.session_state.logged_in = False
 
     if not st.session_state.logged_in:
+        st.sidebar.write(f"👥 Total Users: {count_users()}")
+        st.sidebar.write(f"🟢 Active Users: {1}")
         st.sidebar.title("Authentication")
         auth_mode = st.sidebar.radio("Select Mode", ("Login", "Sign Up"))
         if auth_mode == "Login":
             login_page()
         else:
             signup_page()
+        st.title("Welcome to Prism")
+        st.write("Your platform for submitting and resolving community problems.")    
         st.info("Welcome to Prism, the online Problem Identifier and Solver used to help resolve issues within your community. After logging in, you will be able to submit your own problems around the community that will be analysed and sent to your local officials to be resolved around the community.")
         st.image("prism-logo.png", use_container_width=True)
     else:
