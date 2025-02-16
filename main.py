@@ -228,7 +228,7 @@ def main():
         if st.session_state.admin:
             if st.sidebar.button("Admin Dashboard"):
                 st.session_state.page = "Admin Dashboard"
-
+                
         if st.sidebar.button("Logout"):
             st.session_state.logged_in = False
             st.rerun()  # refresh the app

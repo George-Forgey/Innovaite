@@ -9,7 +9,7 @@ USERS_CSV = "./csvs/users.csv"
 
 # Initialize session state for theme
 if "theme" not in st.session_state:
-    st.session_state.theme = "light"
+    st.session_state.theme = "dark"
 
 def settings():
     st.title("Settings")
