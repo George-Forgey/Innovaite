@@ -208,12 +208,12 @@ def display_problems():
     for cluster in clusters:
         st.subheader(f"Cluster: {cluster['label']}")
         for problem in cluster['problems']:
-            if st.button(f"View Problem {problem['id']}", key=problem['id']):
+            if st.button(f"View Problem {problem['problem_id']}", key=problem['problem_id']):
                 show_problem_detail(problem)
 
 # 4. Detailed Problem View
 def show_problem_detail(problem):
-    st.header(f"Problem Detail (ID: {problem['id']})")
+    st.header(f"Problem Detail (ID: {problem['problem_id']})")
     st.write(problem["text"])
     st.write(f"Sentiment: {problem['sentiment']}")
     st.write(f"Keywords: {problem['keywords']}")
