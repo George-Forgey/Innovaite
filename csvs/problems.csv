@@ -1,6 +1,4 @@
 problem_id,username,text,sentiment,keywords,embedding,problem,category
-3,daniel,,NEGATIVE (1.00),"['rats']",,rats,public spaces
-4,daniel,,NEGATIVE (0.98),"['rat']",,rat,public spaces
 5,unknown,,NEGATIVE (0.99),"['dead animal', 'animal subject', 'animal', 'street cleaning', 'pick dead']",,"Title: Pick up Dead Animal, Subject: Public Works Department, Reason: Street Cleaning, Type: Pick up Dead Animal",public spaces
 6,unknown,,NEGATIVE (0.99),"['parking enforcement', 'parking', 'title parking', 'abandoned vehicles', 'enforcement abandoned']",,"Title: Parking Enforcement, Subject: Transportation - Traffic Division, Reason: Enforcement & Abandoned Vehicles, Type: Parking Enforcement",public spaces
 7,unknown,,NEGATIVE (1.00),"['needle pickup', 'title needle', 'needle program', 'needle', 'reason needle']",,"Title: Needle Pickup, Subject: Mayor's 24 Hour Hotline, Reason: Needle Program, Type: Needle Pickup",crime/safety
@@ -1001,3 +999,4 @@ problem_id,username,text,sentiment,keywords,embedding,problem,category
 1002,unknown,,NEGATIVE (0.99),"['light outages', 'street light', 'street lights', 'outages subject', 'outages']",,"Title: Street Light Outages, Subject: Public Works Department, Reason: Street Lights, Type: Street Light Outages",infrastructure
 1003,unknown,,NEGATIVE (0.99),"['street cleaning', 'requests street', 'title requests', 'cleaning subject', 'street']",,"Title: Requests for Street Cleaning, Subject: Public Works Department, Reason: Street Cleaning, Type: Requests for Street Cleaning",infrastructure
 1004,unknown,,NEGATIVE (0.99),"['parking enforcement', 'parking', 'title parking', 'abandoned vehicles', 'enforcement abandoned']",,"Title: Parking Enforcement, Subject: Transportation - Traffic Division, Reason: Enforcement & Abandoned Vehicles, Type: Parking Enforcement",public spaces
+1005,daniel,,POSITIVE (1.00),['hello'],,hello,housing
