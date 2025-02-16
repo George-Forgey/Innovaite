@@ -141,6 +141,8 @@ Use the following pieces of information enclosed in <context> tags to refine the
 
     prompt_text = PROMPT.format(context=context, question=question_content)
     answer = llm_client.text_generation(prompt_text, max_new_tokens=1000).strip()
+    answer = answer.replace("<answer>", "")
+    answer = answer.replace("</answer>", "")
     return answer
 
 # -------------------------
