@@ -9,3 +9,8 @@ def home():
 
     st.header("Frequent Complaints:")
     st.dataframe(df, use_container_width=True)
+
+    st.header("Top Solutions:")
+    st.write("Solution 1")
+    st.write("Solution 2")
+    st.write("etc")
