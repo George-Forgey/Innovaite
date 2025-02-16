@@ -282,6 +282,7 @@ def polls_page():
 # -------------------------
 # Main App Execution
 # -------------------------
+
 def main():
     # Initialize authentication status if not set
     if "logged_in" not in st.session_state:
@@ -294,7 +295,7 @@ def main():
             login_page()
         else:
             signup_page()
-        st.info("Please log in or sign up to access the app.")
+        st.info("Welcome to Prism, the online Problem Identifier and Solver used to help resolve issues within your community. After logging in, you will be able to submit your own problems around the community that will be analysed and sent to your local officials to be resolved around the community.")
     else:
         st.sidebar.write(f"Logged in as: **{st.session_state.username}**")
         if st.sidebar.button("Logout"):
