@@ -234,8 +234,9 @@ def display_problems():
     for cluster in clusters:
         st.subheader(f"Cluster: {cluster['label']}")
         for problem in cluster['problems']:
-            if st.button(f"View Problem {problem['id']}", key=problem['id']):
-                show_problem_detail(problem)
+          if st.button(f"View Problem {problem['problem_id']}", key=problem['problem_id']):
+              show_problem_detail(problem)
+
 
 # -------------------------
 # Detailed Problem View
