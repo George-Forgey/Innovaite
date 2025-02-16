@@ -1,9 +1,9 @@
-username,password
-qwe,123
-abc,aad
-abcd,def
-example admin,123
-daniel,cat
-daniel2,cat2
-ed,123
-dickinson,dickinson
+username,password,admin
+qwe,123,False
+abc,aad,False
+abcd,def,False
+example admin,123,True
+daniel,cat,False
+daniel2,cat2,False
+ed,123,False
+dickinson,dickinson,False
