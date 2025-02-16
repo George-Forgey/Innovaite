@@ -224,7 +224,7 @@ def main():
             st.session_state.page = "Analytics"
         if st.sidebar.button("Settings"):
             st.session_state.page = "Settings"
-        if st.session_state.get("username") == "example admin":
+        if st.session_state.admin:
             if st.sidebar.button("Admin Dashboard"):
                 st.session_state.page = "Admin Dashboard"
 
