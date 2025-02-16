@@ -151,7 +151,7 @@ if "problems" not in st.session_state:
 
 # 1. Home / Landing Page (with role-specific options)
 def show_home():
-    st.header("Prisim: Problem Reporting & Feedback App")
+    st.header("Prism: Problem Reporting & Feedback App")
     st.write("Created by: Sid Patel, George Forgey, Daniel Nakhooda, Gio Limena")
     st.write("Welcome! Submit your problem or view aggregated feedback.")
     # Display different options based on user role
@@ -306,6 +306,7 @@ def polls_page():
 # -------------------------
 # Main App Execution
 # -------------------------
+
 def main():
     # Initialize authentication status if not set
     if "logged_in" not in st.session_state:
@@ -318,7 +319,7 @@ def main():
             login_page()
         else:
             signup_page()
-        st.info("Please log in or sign up to access the app.")
+        st.info("Welcome to Prism, the online Problem Identifier and Solver used to help resolve issues within your community. After logging in, you will be able to submit your own problems around the community that will be analysed and sent to your local officials to be resolved around the community.")
     else:
         st.sidebar.write(f"Logged in as: **{st.session_state.username}**")
         if st.sidebar.button("Logout"):
