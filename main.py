@@ -228,7 +228,10 @@ def main():
         if st.sidebar.button("FAQ"):
             st.session_state.page = "FAQ" 
         if st.sidebar.button("About Us"):
-            st.session_state.page = "About Us"        
+            st.session_state.page = "About Us"
+
+        st.sidebar.markdown("<hr style='border:0.5px solid white; margin-top:10px; margin-bottom:25px;'>", unsafe_allow_html=True)
+
         if st.sidebar.button("Settings"):
             st.session_state.page = "Settings"
         if st.session_state.admin:
