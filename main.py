@@ -8,9 +8,10 @@ from analytics import analytics
 from polls import polls
 from home import home
 from problems import problems
+from problems import load_problems
+from problems import submit_problem
 from better_profanity import profanity
 from keywords import get_keywords
-from better_profanity import profanity
 from categorize import assign_category, model as cat_model, category_centroids
 
 # -------------------------
@@ -140,30 +141,6 @@ def add_poll_reply(poll_id, reply):
 # Remove the embedding field since it is no longer used.
 PROBLEMS_CSV = "./csvs/problems.csv"
 
-def load_problems():
-    if os.path.exists(PROBLEMS_CSV):
-        return pd.read_csv(PROBLEMS_CSV)
-    else:
-        # Removed "embedding" field
-        df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "category"])
-        df.to_csv(PROBLEMS_CSV, index=False)
-        return df
-
-# -------------------------
-# Home / Landing Page Function
-# -------------------------
-def show_home():
-    st.header("Prism: Problem Reporting & Feedback App")
-    st.write("Created by: Sid Patel, George Forgey, Daniel Nakhooda, Geo Limena")
-    st.write("Welcome! Submit your problem or view aggregated feedback.")
-    # Display different options based on user role
-    if st.session_state.username == "example admin":
-        options = ["Submit a Problem", "View Problems", "Admin Dashboard", "Account Settings"]
-    else:
-        options = ["Submit a Problem", "View Problems", "Polls", "Account Settings"]
-    option = st.selectbox("Select an option:", options)
-    return option
-
 # -------------------------
 # Problem Stuff
 # -------------------------
@@ -189,46 +166,6 @@ def load_problems():
         df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "embedding"])
         df.to_csv(PROBLEMS_CSV, index=False)
         return df
-
-# 2. Problem Submission
-def submit_problem():
-    df = load_problems()
-
-    df = load_problems()
-    st.header("Submit Your Problem")
-    problem_text = st.text_area("Describe your problem:", height=150)
-    if st.button("Submit"):
-        if (profanity.contains_profanity(problem_text)):
-            st.info("Your message cannot contain profanity!")
-        else:
-            # Use categorization from categorize.py
-            assigned_category, sim_scores = assign_category(problem_text, cat_model, category_centroids)
-            st.write(f"Assigned Category: **{assigned_category}**")
-            
-            # Compute sentiment score using sentiment.py
-            sentiment_label, sentiment_score = analyze_sentiment(problem_text)
-            sentiment = f"{sentiment_label} ({sentiment_score:.2f})"
-
-            # Extract keywords using keyword.py
-            keywords = get_keywords(problem_text)
-            
-            # Create the problem entry without the embedding field
-            problem_entry = {
-                "problem_id": len(st.session_state.problems) + 1,
-                "username": st.session_state.username,
-                "problem": problem_text,
-                "sentiment": sentiment,
-                "keywords": keywords,
-                "category": assigned_category
-            }
-
-            st.session_state.problems.append(problem_entry)
-            st.success("Problem submitted successfully!")
-    
-        new_entry = pd.DataFrame([problem_entry])
-        df = pd.concat([df, new_entry], ignore_index=True)
-        df.to_csv(PROBLEMS_CSV, index=False)
-      
 
 # 3. Display Aggregated Problems
 def display_problems():
@@ -374,7 +311,6 @@ def main():
     else:
         st.sidebar.write(f"Logged in as: **{st.session_state.username}**")
         st.sidebar.title("Navigation")
-        #page = st.sidebar.button(["Home", "Dashboard", "Reports", "Notifications"])
 
         if st.sidebar.button("Home"):
             st.session_state.page = "Home"
@@ -391,20 +327,19 @@ def main():
         if st.sidebar.button("Logout"):
             st.session_state.logged_in = False
             st.rerun()  # refresh the app
-        option = show_home()
-        if option == "Submit a Problem":
-            submit_problem()
-        elif option == "View Problems":
-            display_problems()
-        elif option == "Admin Dashboard":
             if st.session_state.admin:
                 admin_dashboard()
             else:
                 st.error("Unauthorized access!")
+        
+        if "page" not in st.session_state:
+            st.session_state.page = "Home" 
+
         if st.session_state.page == "Home":
             home()
         elif st.session_state.page == "Submit a Problem":
             problems()
+            submit_problem()
         elif st.session_state.page == "Admin Dashboard":
             if st.session_state.get("username") == "example admin":
                 admin_dashboard()
