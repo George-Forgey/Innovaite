@@ -177,7 +177,6 @@ def submit_problem():
     if st.button("Submit"):
         if (profanity.contains_profanity(problem_text)):
             st.info("Your message cannot contain profanity!")
-            return
 
         sentiment = analyze_sentiment(problem_text)          # Replace with your function
         keywords = extract_keywords(problem_text)            # Replace with your function
@@ -274,10 +273,10 @@ def polls_page():
             if reply:
                 if (profanity.contains_profanity(reply)):
                     st.info("Your reply cannot contain profanity!")
-                    return
-                add_poll_reply(int(row['poll_id']), reply)
-                st.success("Reply submitted!")
-                st.rerun()
+                else:
+                    add_poll_reply(int(row['poll_id']), reply)
+                    st.success("Reply submitted!")
+                    st.rerun()
             else:
                 st.error("Please enter a reply.")
 
