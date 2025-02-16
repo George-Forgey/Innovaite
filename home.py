@@ -4,6 +4,7 @@ from load import load_rankings, load_problems
 def home():
     st.title("Home")
     st.write("Welcome to the home page.")
+    st.write("Created by: Sid Patel, George Forgey, Daniel Nakhooda, Gio Limena, Benji Alwis, Gio Jean")
 
     df = load_rankings()
 
