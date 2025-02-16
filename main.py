@@ -12,6 +12,8 @@ from polls import polls_page
 from settings import settings
 from load import load_users, load_polls, count_users
 from settings import account_settings_page
+from faq import faq
+from about import about
 from better_profanity import profanity
 from keywords import get_keywords
 from categorize import assign_category, model as cat_model, category_centroids
@@ -223,6 +225,10 @@ def main():
             st.session_state.page = "Polls"
         if st.sidebar.button("Analytics"):
             st.session_state.page = "Analytics"
+        if st.sidebar.button("FAQ"):
+            st.session_state.page = "FAQ" 
+        if st.sidebar.button("About Us"):
+            st.session_state.page = "About Us"        
         if st.sidebar.button("Settings"):
             st.session_state.page = "Settings"
         if st.session_state.admin:
@@ -258,6 +264,10 @@ def main():
             polls_page()
         elif st.session_state.page == "Analytics":
             analytics()
+        elif st.session_state.page == "FAQ":
+            faq()
+        elif st.session_state.page == "About Us":
+            about()        
 
 if __name__ == '__main__':
     main()
