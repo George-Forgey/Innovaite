@@ -94,9 +94,6 @@ def save_poll(question):
     return new_id
 
 def add_poll_reply(poll_id, reply):
-    if (profanity.contains_profanity(reply)):
-        st.info("Your reply cannot contain profanity!")
-        return
     """Add a reply to a specific poll by poll_id."""
     df = load_polls()
     poll_row = df.loc[df["poll_id"] == poll_id]
@@ -275,6 +272,9 @@ def polls_page():
         reply = st.text_input(f"Your reply for poll {int(row['poll_id'])}", key=f"reply_{int(row['poll_id'])}")
         if st.button(f"Submit Reply for poll {int(row['poll_id'])}", key=f"submit_reply_{int(row['poll_id'])}"):
             if reply:
+                if (profanity.contains_profanity(reply)):
+                    st.info("Your reply cannot contain profanity!")
+                    return
                 add_poll_reply(int(row['poll_id']), reply)
                 st.success("Reply submitted!")
                 st.rerun()
