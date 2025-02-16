@@ -1,5 +1,5 @@
 import streamlit as st
-from load import load_rankings
+from load import load_rankings, load_problems
 
 def home():
     st.title("Home")
@@ -7,8 +7,16 @@ def home():
 
     df = load_rankings()
 
+    dfProblems = load_problems()
+
+    category_counts = dfProblems["category"].value_counts().to_dict()
+    df["Number of Reports"] = df["Category"].map(category_counts).fillna(0).astype(int)
+
+    df = df.sort_values(by="Number of Reports", ascending=False)
+
     st.header("Frequent Complaints:")
-    st.dataframe(df, use_container_width=True)
+    
+    st.table(df.reset_index(drop=True))
 
     st.header("Top Solutions:")
     st.write("Solution 1")

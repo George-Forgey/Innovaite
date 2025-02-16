@@ -201,6 +201,7 @@ def main():
         st.session_state.logged_in = False
 
     if not st.session_state.logged_in:
+        st.sidebar.title("User Statistics")
         st.sidebar.write(f"👥 Total Users: {count_users()}")
         st.sidebar.write(f"🟢 Active Users: {1}")
         st.sidebar.title("Authentication")

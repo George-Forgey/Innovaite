@@ -5,6 +5,7 @@ import pandas as pd
 USERS_CSV = "./csvs/users.csv"
 POLLS_CSV = "./csvs/polls.csv"
 RANKINGS_CSV = "./csvs/rankings.csv"
+PROBLEMS_CSV = "./csvs/problems.csv"
 
 def load_users():
     """Load users from CSV; if not exists, create an empty DataFrame."""
@@ -23,6 +24,14 @@ def load_polls():
     else:
         df = pd.DataFrame(columns=["poll_id", "question", "replies", "usernames"])
         df.to_csv(POLLS_CSV, index=False)
+        return df
+
+def load_problems():
+    if os.path.exists(PROBLEMS_CSV):
+        return pd.read_csv(PROBLEMS_CSV)
+    else:
+        df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "embedding"])
+        df.to_csv(PROBLEMS_CSV, index=False)
         return df
 
 def load_rankings():
