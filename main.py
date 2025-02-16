@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import json
 from sentiment import analyze_sentiment
+from better_profanity import profanity
 from keywords import get_keywords
 from better_profanity import profanity
 from categorize import assign_category, model as cat_model, category_centroids
@@ -17,6 +18,7 @@ def load_users():
     if os.path.exists(USERS_CSV):
         return pd.read_csv(USERS_CSV)
     else:
+        # Create a new CSV file with the appropriate columns
         df = pd.DataFrame(columns=["username", "password"])
         df.to_csv(USERS_CSV, index=False)
         return df
@@ -24,6 +26,7 @@ def load_users():
 def save_user(username, password):
     """Append a new user to the CSV file."""
     df = load_users()
+    # Check if username already exists
     if username in df['username'].values:
         return False
     new_user = pd.DataFrame([[username, password]], columns=["username", "password"])
@@ -49,6 +52,7 @@ def login_page():
             st.session_state.logged_in = True
             st.session_state.username = username
             st.sidebar.success("Logged in successfully!")
+            st.rerun()
         else:
             st.sidebar.error("Invalid username or password.")
 
@@ -100,12 +104,17 @@ def add_poll_reply(poll_id, reply):
     if poll_row.empty:
         return False
     index = poll_row.index[0]
+    replies_str = df.at[index, "replies"]
     try:
         replies = json.loads(df.at[index, "replies"]) if df.at[index, "replies"] else []
         usernames = json.loads(df.at[index, "usernames"]) if df.at[index, "usernames"] else []
     except:
         replies, usernames = [], []
     if st.session_state.username in usernames:
+        user_index = usernames.index(st.session_state.username)
+        replies[user_index] = reply
+        df.at[index, "replies"] = json.dumps(replies)
+        df.to_csv(POLLS_CSV, index=False)
         user_index = usernames.index(st.session_state.username)
         replies[user_index] = reply
         df.at[index, "replies"] = json.dumps(replies)
@@ -140,6 +149,7 @@ def show_home():
     st.header("Prism: Problem Reporting & Feedback App")
     st.write("Created by: Sid Patel, George Forgey, Daniel Nakhooda, Geo Limena")
     st.write("Welcome! Submit your problem or view aggregated feedback.")
+    # Display different options based on user role
     if st.session_state.username == "example admin":
         options = ["Submit a Problem", "View Problems", "Admin Dashboard"]
     else:
@@ -148,14 +158,41 @@ def show_home():
     return option
 
 # -------------------------
+# Problem Stuff
+# -------------------------
+PROBLEMS_CSV = "./csvs/problems.csv"
+
+def load_problems():
+    if os.path.exists(PROBLEMS_CSV):
+        return pd.read_csv(PROBLEMS_CSV)
+    else:
+        df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "embedding"])
+        df.to_csv(PROBLEMS_CSV, index=False)
+        return df
+
+# -------------------------
 # Problem Submission with Automatic Categorization, Sentiment, and Keyword Extraction
 # -------------------------
+PROBLEMS_CSV = "./csvs/problems.csv"
+
+def load_problems():
+    if os.path.exists(PROBLEMS_CSV):
+        return pd.read_csv(PROBLEMS_CSV)
+    else:
+        df = pd.DataFrame(columns=["problem_id", "username", "problem", "sentiment", "keywords", "embedding"])
+        df.to_csv(PROBLEMS_CSV, index=False)
+        return df
+
+# 2. Problem Submission
 def submit_problem():
+
+    df = load_problems()
+
     df = load_problems()
     st.header("Submit Your Problem")
     problem_text = st.text_area("Describe your problem:", height=150)
     if st.button("Submit"):
-        if profanity.contains_profanity(problem_text):
+        if (profanity.contains_profanity(problem_text)):
             st.info("Your message cannot contain profanity!")
         else:
             # Use categorization from categorize.py
@@ -182,13 +219,12 @@ def submit_problem():
             st.session_state.problems.append(problem_entry)
             st.success("Problem submitted successfully!")
     
-            new_entry = pd.DataFrame([problem_entry])
-            df = pd.concat([df, new_entry], ignore_index=True)
-            df.to_csv(PROBLEMS_CSV, index=False)
+        new_entry = pd.DataFrame([problem_entry])
+        df = pd.concat([df, new_entry], ignore_index=True)
+        df.to_csv(PROBLEMS_CSV, index=False)
+      
 
-# -------------------------
-# Display Aggregated Problems
-# -------------------------
+# 3. Display Aggregated Problems
 def display_problems():
     st.header("Reported Problems")
     if not st.session_state.problems:
@@ -198,7 +234,7 @@ def display_problems():
     for cluster in clusters:
         st.subheader(f"Cluster: {cluster['label']}")
         for problem in cluster['problems']:
-            if st.button(f"View Problem {problem['problem_id']}", key=problem['problem_id']):
+            if st.button(f"View Problem {problem['id']}", key=problem['id']):
                 show_problem_detail(problem)
 
 # -------------------------
@@ -274,7 +310,7 @@ def polls_page():
         reply = st.text_input(f"Your reply for poll {int(row['poll_id'])}", key=f"reply_{int(row['poll_id'])}")
         if st.button(f"Submit Reply for poll {int(row['poll_id'])}", key=f"submit_reply_{int(row['poll_id'])}"):
             if reply:
-                if profanity.contains_profanity(reply):
+                if (profanity.contains_profanity(reply)):
                     st.info("Your reply cannot contain profanity!")
                 else:
                     add_poll_reply(int(row['poll_id']), reply)
@@ -301,7 +337,7 @@ def main():
             login_page()
         else:
             signup_page()
-        st.info("Welcome to Prism, the online Problem Identifier and Solver. After logging in, you can submit problems that will be automatically analyzed, assigned a sentiment score, keywords, and categorized.")
+        st.info("Welcome to Prism, the online Problem Identifier and Solver used to help resolve issues within your community. After logging in, you will be able to submit your own problems around the community that will be analysed and sent to your local officials to be resolved around the community.")
         st.image("prism-logo.png", use_container_width=True)
     else:
         st.sidebar.write(f"Logged in as: **{st.session_state.username}**")
@@ -314,6 +350,7 @@ def main():
         elif option == "View Problems":
             display_problems()
         elif option == "Admin Dashboard":
+            # Only admin should see this option, but we double-check:
             if st.session_state.username == "example admin":
                 admin_dashboard()
             else:
