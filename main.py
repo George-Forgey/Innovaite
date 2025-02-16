@@ -337,16 +337,24 @@ def account_settings_page():
         df_problems = df_problems[df_problems["username"] != st.session_state.username]
         df_problems.to_csv(PROBLEMS_CSV, index=False)
 
-        df_polls = load_polls()
-        df_polls["usernames"] = df_polls["usernames"].apply(lambda x: ast.literal_eval(x))
-        df_polls["replies"] = df_polls["replies"].apply(lambda x: ast.literal_eval(x))
-        for index, row in df_polls.iterrows():
-            if st.session_state.username in row["usernames"]:
-                username_index = row["usernames"].index(st.session_state.username)
-                row["replies"].pop(username_index)
-                row["usernames"].remove(st.session_state.username)
-
-        df_polls.to_csv(POLLS_CSV, index=False)
+        df = load_polls()
+    
+        for index, row in df.iterrows():
+            usernames = json.loads(row["usernames"]) if row["usernames"] else []
+            replies = json.loads(row["replies"]) if row["replies"] else []
+        
+            if st.session_state.username in usernames:
+                user_index = usernames.index(st.session_state.username)
+            
+                # Remove the username and corresponding reply
+                usernames.pop(user_index)
+                replies.pop(user_index)
+            
+                # Update the dataframe
+                df.at[index, "usernames"] = json.dumps(usernames)
+                df.at[index, "replies"] = json.dumps(replies)
+    
+        df.to_csv(POLLS_CSV, index=False)
 
         st.session_state.logged_in = False
         st.rerun()
